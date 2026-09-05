@@ -20,38 +20,30 @@ const userSchema = new mongoose.Schema(
             default: false,
         },
 
-        email: {
-            type: String,
-            trim: true,
-            lowercase: true,
-        },
-
         role: {
             type: String,
-            enum: ["FARMER", "BUYER", "ADMIN"],
+            enum: ["FARMER", "BUYER"],
             required: true,
+        },
+
+        village: {
+            type: String,
+            required: true,
+            trim: true,
+        },
+
+        produceInterest: {
+            type: String,
+            trim: true,
+            default: "",
         },
 
         farmerType: {
             type: String,
-            enum: ["SMALL", "COMMERCIAL", "FPO"],
-        },
-
-        location: {
-            village: {
-                type: String,
-                trim: true,
-            },
-
-            district: {
-                type: String,
-                trim: true,
-            },
-
-            state: {
-                type: String,
-                trim: true,
-            },
+            enum: [
+                "SMALL",
+                "LARGE",
+            ],
         },
     },
     {
@@ -59,6 +51,9 @@ const userSchema = new mongoose.Schema(
     }
 );
 
-const User = mongoose.model("User", userSchema);
+const User = mongoose.model(
+    "User",
+    userSchema
+);
 
 export default User;

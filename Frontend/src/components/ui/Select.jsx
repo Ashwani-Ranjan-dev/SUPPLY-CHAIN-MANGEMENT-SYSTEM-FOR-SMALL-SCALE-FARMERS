@@ -3,16 +3,28 @@ const Select = ({
     name,
     value,
     onChange,
-    children,
-    error,
+    options,
+    placeholder,
+    required = false,
 }) => {
     return (
         <div className="space-y-2">
             <label
                 htmlFor={name}
-                className="block text-sm font-medium text-gray-700"
+                className="
+                    block
+                    text-sm
+                    font-medium
+                    text-gray-700
+                "
             >
                 {label}
+
+                {required && (
+                    <span className="ml-1 text-red-500">
+                        *
+                    </span>
+                )}
             </label>
 
             <select
@@ -20,34 +32,37 @@ const Select = ({
                 name={name}
                 value={value}
                 onChange={onChange}
-                aria-invalid={Boolean(error)}
-                className={`
+                required={required}
+                className="
+                    h-12
                     w-full
                     rounded-xl
                     border
+                    border-gray-200
                     bg-white
                     px-4
-                    py-3
                     text-sm
-                    text-gray-900
+                    text-gray-800
                     outline-none
                     transition
+                    focus:border-green-500
                     focus:ring-4
-                    ${
-                        error
-                            ? "border-red-400 focus:border-red-500 focus:ring-red-500/10"
-                            : "border-gray-200 focus:border-green-500 focus:ring-green-500/10"
-                    }
-                `}
+                    focus:ring-green-500/10
+                "
             >
-                {children}
-            </select>
+                <option value="">
+                    {placeholder}
+                </option>
 
-            {error && (
-                <p className="text-xs font-medium text-red-600">
-                    {error}
-                </p>
-            )}
+                {options.map((option) => (
+                    <option
+                        key={option.value}
+                        value={option.value}
+                    >
+                        {option.label}
+                    </option>
+                ))}
+            </select>
         </div>
     );
 };

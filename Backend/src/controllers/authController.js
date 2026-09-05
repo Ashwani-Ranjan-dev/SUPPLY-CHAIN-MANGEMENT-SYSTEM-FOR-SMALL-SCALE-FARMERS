@@ -74,6 +74,9 @@ export const verifyOtp = async (req, res) => {
             userData,
         } = req.body;
 
+        // --------------------------------
+        // 1. Basic validation
+        // --------------------------------
         if (!phone || !otp) {
             return res.status(400).json({
                 message:
@@ -81,6 +84,9 @@ export const verifyOtp = async (req, res) => {
             });
         }
 
+        // --------------------------------
+        // 2. Find OTP
+        // --------------------------------
         const otpRecord = await Otp.findOne({
             phone,
         });
@@ -92,6 +98,9 @@ export const verifyOtp = async (req, res) => {
             });
         }
 
+        // --------------------------------
+        // 3. Check expiry
+        // --------------------------------
         if (
             otpRecord.expiresAt.getTime() <
             Date.now()
@@ -106,6 +115,9 @@ export const verifyOtp = async (req, res) => {
             });
         }
 
+        // --------------------------------
+        // 4. Check attempts
+        // --------------------------------
         if (otpRecord.attempts >= 5) {
             await Otp.deleteOne({
                 _id: otpRecord._id,
@@ -117,6 +129,9 @@ export const verifyOtp = async (req, res) => {
             });
         }
 
+        // --------------------------------
+        // 5. Verify OTP
+        // --------------------------------
         const submittedHash = hashotp(otp);
 
         if (
@@ -127,27 +142,26 @@ export const verifyOtp = async (req, res) => {
             await otpRecord.save();
 
             return res.status(400).json({
-                message:
-                    "Invalid OTP.",
+                message: "Invalid OTP.",
             });
         }
 
+        // --------------------------------
+        // 6. Check existing user
+        // --------------------------------
         let user = await User.findOne({
             phone,
         });
 
-        /*
-         * Existing user
-         */
         if (user) {
             user.phoneVerified = true;
 
             await user.save();
         }
 
-        /*
-         * New user
-         */
+        // --------------------------------
+        // 7. Create new user
+        // --------------------------------
         else {
             if (!userData) {
                 return res.status(400).json({
@@ -156,34 +170,140 @@ export const verifyOtp = async (req, res) => {
                 });
             }
 
+            // console.log(
+            //     "USER DATA RECEIVED:",
+            //     userData
+            // );
+
+            const {
+                name,
+                role,
+                village,
+                produceInterest,
+                farmerType,
+            } = userData;
+
+            // --------------------------------
+            // 8. Normalize role
+            // --------------------------------
+            const normalizedRole = String(role || "")
+                .trim()
+                .toUpperCase();
+
+            // --------------------------------
+            // 9. Validate required fields
+            // --------------------------------
+            if (!name?.trim()) {
+                return res.status(400).json({
+                    message:
+                        "Name is required.",
+                });
+            }
+
+            if (!normalizedRole) {
+                return res.status(400).json({
+                    message:
+                        "Role is required.",
+                });
+            }
+
+            if (!village?.trim()) {
+                return res.status(400).json({
+                    message:
+                        "Village is required.",
+                });
+            }
+
+            // --------------------------------
+            // 10. Validate role
+            // --------------------------------
+            if (
+                !["FARMER", "BUYER"].includes(
+                    normalizedRole
+                )
+            ) {
+                return res.status(400).json({
+                    message:
+                        "Invalid user role. Role must be FARMER or BUYER.",
+                });
+            }
+
+            // --------------------------------
+            // 11. Farmer-specific validation
+            // --------------------------------
+            if (
+                normalizedRole === "FARMER" &&
+                !farmerType
+            ) {
+                return res.status(400).json({
+                    message:
+                        "Farmer type is required.",
+                });
+            }
+
+            // --------------------------------
+            // 12. Create user
+            // --------------------------------
             user = await User.create({
-                ...userData,
+                name: name.trim(),
                 phone,
+                role: normalizedRole,
+                village: village.trim(),
+                produceInterest:
+                    String(produceInterest || "").trim(),
+                farmerType:
+                    normalizedRole === "FARMER"
+                        ? farmerType
+                        : undefined,
                 phoneVerified: true,
             });
         }
 
+        // --------------------------------
+        // 13. Delete used OTP
+        // --------------------------------
         await Otp.deleteOne({
             _id: otpRecord._id,
         });
 
+        // --------------------------------
+        // 14. Generate JWT
+        // --------------------------------
         const token = generatetoken(
             user._id.toString()
         );
 
+        // --------------------------------
+        // 15. Set cookie
+        // --------------------------------
         res.cookie("token", token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
+
+            secure:
+                process.env.NODE_ENV ===
+                "production",
+
             sameSite:
-                process.env.NODE_ENV === "production"
+                process.env.NODE_ENV ===
+                    "production"
                     ? "none"
                     : "lax",
-            maxAge: 7 * 24 * 60 * 60 * 1000,
+
+            maxAge:
+                7 *
+                24 *
+                60 *
+                60 *
+                1000,
         });
 
+        // --------------------------------
+        // 16. Response
+        // --------------------------------
         return res.status(200).json({
             message:
                 "Phone verified successfully.",
+
             user: {
                 id: user._id,
                 name: user.name,
@@ -193,6 +313,7 @@ export const verifyOtp = async (req, res) => {
                     user.phoneVerified,
             },
         });
+
     } catch (error) {
         console.error(
             "Verify OTP Error:",
