@@ -74,9 +74,8 @@ export const verifyOtp = async (req, res) => {
             userData,
         } = req.body;
 
-        // --------------------------------
+       
         // 1. Basic validation
-        // --------------------------------
         if (!phone || !otp) {
             return res.status(400).json({
                 message:
@@ -84,9 +83,9 @@ export const verifyOtp = async (req, res) => {
             });
         }
 
-        // --------------------------------
+        
         // 2. Find OTP
-        // --------------------------------
+       
         const otpRecord = await Otp.findOne({
             phone,
         });
@@ -323,6 +322,228 @@ export const verifyOtp = async (req, res) => {
         return res.status(500).json({
             message:
                 "Unable to verify OTP.",
+        });
+    }
+};
+
+export const sendLoginOtp = async (req, res) => {
+    try {
+        const { phone } = req.body;
+
+        // 1. Validate phone
+        if (!phone) {
+            return res.status(400).json({
+                success: false,
+                message: "Phone number is required.",
+            });
+        }
+
+        if (!/^[6-9]\d{9}$/.test(phone)) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Enter a valid 10-digit Indian mobile number.",
+            });
+        }
+
+        // 2. Check whether user exists
+        const user = await User.findOne({ phone });
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message:
+                    "No account found with this mobile number. Please register first.",
+            });
+        }
+
+        // 3. Generate OTP
+        const otp = generateOtp();
+
+        // 4. Hash OTP
+        const otpHash = hashotp(otp);
+
+        // 5. Remove previous OTP
+        await Otp.deleteMany({
+            phone,
+        });
+
+        // 6. Store new OTP
+        await Otp.create({
+            phone,
+            otpHash,
+            expiresAt: getOtpExpiry(),
+        });
+
+        // Development only
+        console.log(
+            `🔐 Login OTP for ${phone}: ${otp}`
+        );
+
+        return res.status(200).json({
+            success: true,
+            message: "Login OTP sent successfully.",
+        });
+
+    } catch (error) {
+        console.error(
+            "Send Login OTP Error:",
+            error
+        );
+
+        return res.status(500).json({
+            success: false,
+            message: "Unable to send login OTP.",
+        });
+    }
+};
+
+export const verifyLoginOtp = async (req, res) => {
+    try {
+        const { phone, otp } = req.body;
+
+        // 1. Basic validation
+        if (!phone || !otp) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Phone number and OTP are required.",
+            });
+        }
+
+        // 2. Find existing user
+        const user = await User.findOne({ phone });
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message:
+                    "No account found. Please register first.",
+            });
+        }
+
+        // 3. Find OTP
+        const otpRecord = await Otp.findOne({
+            phone,
+        });
+
+        if (!otpRecord) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "OTP expired or not found. Please request a new OTP.",
+            });
+        }
+
+        // 4. Check expiry
+        if (
+            otpRecord.expiresAt.getTime() <
+            Date.now()
+        ) {
+            await Otp.deleteOne({
+                _id: otpRecord._id,
+            });
+
+            return res.status(400).json({
+                success: false,
+                message:
+                    "OTP has expired. Please request a new OTP.",
+            });
+        }
+
+        // 5. Check attempts
+        if (otpRecord.attempts >= 5) {
+            await Otp.deleteOne({
+                _id: otpRecord._id,
+            });
+
+            return res.status(429).json({
+                success: false,
+                message:
+                    "Too many incorrect attempts. Request a new OTP.",
+            });
+        }
+
+        // 6. Hash submitted OTP
+        const submittedHash = hashotp(otp);
+
+        // 7. Compare OTP
+        if (
+            submittedHash !== otpRecord.otpHash
+        ) {
+            otpRecord.attempts += 1;
+
+            await otpRecord.save();
+
+            return res.status(400).json({
+                success: false,
+                message: "Invalid OTP.",
+            });
+        }
+
+        // 8. Mark phone verified
+        user.phoneVerified = true;
+
+        await user.save();
+
+        // 9. Delete used OTP
+        await Otp.deleteOne({
+            _id: otpRecord._id,
+        });
+
+        // 10. Generate JWT
+        const token = generatetoken(
+            user._id.toString()
+        );
+
+        // 11. Set HttpOnly cookie
+        res.cookie("token", token, {
+            httpOnly: true,
+
+            secure:
+                process.env.NODE_ENV ===
+                "production",
+
+            sameSite:
+                process.env.NODE_ENV ===
+                    "production"
+                    ? "none"
+                    : "lax",
+
+            maxAge:
+                7 *
+                24 *
+                60 *
+                60 *
+                1000,
+        });
+
+        // 12. Send response
+        return res.status(200).json({
+            success: true,
+            message: "Login successful.",
+            user: {
+                id: user._id,
+                name: user.name,
+                phone: user.phone,
+                role: user.role,
+                farmerType: user.farmerType,
+                village: user.village,
+                phoneVerified:
+                    user.phoneVerified,
+            },
+        });
+
+    } catch (error) {
+        console.error(
+            "Verify Login OTP Error:",
+            error
+        );
+
+        return res.status(500).json({
+            success: false,
+            message:
+                "Unable to verify login OTP.",
         });
     }
 };

@@ -5,6 +5,8 @@ import {
     logout,
     sendOtp,
     verifyOtp,
+    sendLoginOtp,
+    verifyLoginOtp
 } from "../controllers/authController.js";
 import { protect } from "../middleware/authMiddleware.js";
 
@@ -31,4 +33,13 @@ router.post(
     logout
 );
 
+router.post(
+    "/send-login-otp",
+    sendLoginOtp
+);
+
+router.post(
+    "/verify-login-otp",
+    verifyLoginOtp
+);
 export default router;
