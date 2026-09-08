@@ -4,7 +4,7 @@ import {
     getCurrentUser,
     logout,
     sendOtp,
-    verifyOtp
+    verifyOtp,
 } from "../controllers/authController.js";
 import { protect } from "../middleware/authMiddleware.js";
 

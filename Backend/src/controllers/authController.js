@@ -327,22 +327,33 @@ export const verifyOtp = async (req, res) => {
     }
 };
 
-export const getCurrentUser = async (
-    req,
-    res
-) => {
-    return res.status(200).json({
-        user: {
-            id: req.user._id,
-            name: req.user.name,
-            phone: req.user.phone,
-            role: req.user.role,
-            farmerType: req.user.farmerType,
-            location: req.user.location,
-            phoneVerified:
-                req.user.phoneVerified,
-        },
-    });
+export const getCurrentUser = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id)
+            .select("-__v");
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found.",
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            user,
+        });
+    } catch (error) {
+        console.error(
+            "Get current user error:",
+            error
+        );
+
+        return res.status(500).json({
+            success: false,
+            message: "Unable to fetch current user.",
+        });
+    }
 };
 
 export const logout = async (

@@ -1,19 +1,48 @@
-import Register from './pages/Register'
-import Login from './pages/Login'
-import {BrowserRouter , Router , Routes, Route} from "react-router-dom"
- 
-const App = () => {
-  return (
-   <div>
-    <BrowserRouter>
-   <Routes>
-    <Route path='/' element={<Register/>}/>
-    <Route path='/login' element={<Login/>}/>
-   </Routes>
-   </BrowserRouter>
-   </div>
-    
-  )
-}
+import {
+    BrowserRouter,
+    Routes,
+    Route,
+} from "react-router-dom";
 
-export default App
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Dashboard from "./pages/Dashboard";
+
+import ProtectedRoute from "./components/auth/ProtectedRoute";
+
+const App = () => {
+    return (
+        <BrowserRouter>
+            <Routes>
+
+                {/* Public */}
+                <Route
+                    path="/login"
+                    element={<Login />}
+                />
+
+                <Route
+                    path="/register"
+                    element={<Register />}
+                />
+
+                {/* Protected */}
+                <Route
+                    element={
+                        <ProtectedRoute />
+                    }
+                >
+                    <Route
+                        path="/dashboard"
+                        element={
+                            <Dashboard />
+                        }
+                    />
+                </Route>
+
+            </Routes>
+        </BrowserRouter>
+    );
+};
+
+export default App;
