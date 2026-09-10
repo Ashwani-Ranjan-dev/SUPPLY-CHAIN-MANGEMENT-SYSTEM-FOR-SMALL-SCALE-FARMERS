@@ -377,7 +377,7 @@ export const sendLoginOtp = async (req, res) => {
 
         // Development only
         console.log(
-            `🔐 Login OTP for ${phone}: ${otp}`
+            `Login OTP for ${phone}: ${otp}`
         );
 
         return res.status(200).json({
