@@ -1,118 +1,456 @@
+import { useState } from "react";
+
 import {
-    Leaf,
-    MapPin,
-    Package,
+    Sprout,
+    Handshake,
+    IndianRupee,
+    Truck,
+    Plus,
     TrendingUp,
+    ArrowRight,
 } from "lucide-react";
 
 import { useAuth } from "../../context/AuthContext";
-import LogoutButton from "../../components/auth/LogoutButton";
+
+import FarmerSidebar from "../../components/Farmer/farmerSideBar";
+import FarmerHeader from "../../components/Farmer/FarmerHeader";
+import DashboardStatCard from "../../components/Farmer/DashboardStatCard";
+import MarketPriceCard from "../../components/Farmer/MarketPriceCard";
+import QuickActionCard from "../../components/Farmer/QuickActionCard";
 
 const FarmerDashboard = () => {
     const { user } = useAuth();
 
+    const [mobileOpen, setMobileOpen] =
+        useState(false);
+
+    const isSmallFarmer =
+        user?.farmerType === "SMALL";
+
     return (
-        <main className="min-h-screen bg-[#f5faf5] px-5 py-8 sm:px-8">
-            <div className="mx-auto max-w-7xl">
+        <div
+            className="
+                flex min-h-screen
+                bg-[#f7faf7]
+            "
+        >
+            <FarmerSidebar
+                mobileOpen={mobileOpen}
+                setMobileOpen={setMobileOpen}
+            />
 
-                {/* Header */}
-                <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
+            <div className="flex min-w-0 flex-1 flex-col">
+                <FarmerHeader
+                    setMobileOpen={setMobileOpen}
+                />
 
-                    <div>
-                        <div className="flex items-center gap-2">
-                            <Leaf className="h-5 w-5 text-green-600" />
+                <main
+                    className="
+                        flex-1
+                        overflow-y-auto
+                        p-4 sm:p-6 lg:p-8
+                    "
+                >
+                    <div className="mx-auto max-w-7xl">
+                        {/* Welcome Section */}
 
-                            <p className="text-sm font-bold tracking-wider text-green-600">
-                                KRISHICONNECT
-                            </p>
-                        </div>
+                        <section
+                            className="
+                                mb-8
+                                rounded-3xl
+                                bg-green-700
+                                p-6
+                                text-white
+                                shadow-sm
+                                sm:p-8
+                            "
+                        >
+                            <div
+                                className="
+                                    flex
+                                    flex-col
+                                    gap-6
+                                    lg:flex-row
+                                    lg:items-center
+                                    lg:justify-between
+                                "
+                            >
+                                <div>
+                                    <div
+                                        className="
+                                            mb-3
+                                            inline-flex
+                                            items-center
+                                            gap-2
+                                            rounded-full
+                                            bg-white/10
+                                            px-3 py-1.5
+                                            text-xs
+                                            font-medium
+                                        "
+                                    >
+                                        <Sprout size={14} />
 
-                        <h1 className="mt-2 text-3xl font-bold text-gray-900">
-                            Welcome, {user?.name}
-                        </h1>
+                                        {isSmallFarmer
+                                            ? "Assisted Mode"
+                                            : "Trade Mode"}
+                                    </div>
 
-                        <div className="mt-2 flex items-center gap-2 text-sm text-gray-500">
-                            <MapPin className="h-4 w-4" />
+                                    <h1
+                                        className="
+                                            text-2xl
+                                            font-bold
+                                            sm:text-3xl
+                                        "
+                                    >
+                                        Good morning,{" "}
+                                        {user?.name?.split(
+                                            " "
+                                        )[0] || "Farmer"}! 👋
+                                    </h1>
 
-                            {user?.village}
-                        </div>
+                                    <p
+                                        className="
+                                            mt-2
+                                            max-w-xl
+                                            text-sm
+                                            leading-6
+                                            text-green-50
+                                        "
+                                    >
+                                        Manage your produce,
+                                        discover market prices
+                                        and connect directly
+                                        with buyers.
+                                    </p>
+                                </div>
+
+                                <button
+                                    className="
+                                        inline-flex
+                                        items-center
+                                        justify-center
+                                        gap-2
+                                        rounded-xl
+                                        bg-white
+                                        px-5 py-3
+                                        text-sm
+                                        font-bold
+                                        text-green-700
+                                        transition
+                                        hover:bg-green-50
+                                    "
+                                >
+                                    <Plus size={18} />
+
+                                    Add Produce
+                                </button>
+                            </div>
+                        </section>
+
+                        {/* Stats */}
+
+                        <section
+                            className="
+                                mb-8
+                                grid
+                                grid-cols-1
+                                gap-4
+                                sm:grid-cols-2
+                                xl:grid-cols-4
+                            "
+                        >
+                            <DashboardStatCard
+                                title="My Produce"
+                                value="3"
+                                subtitle="Active listings"
+                                icon={Sprout}
+                            />
+
+                            <DashboardStatCard
+                                title="Active Deals"
+                                value="2"
+                                subtitle="Deals in progress"
+                                icon={Handshake}
+                            />
+
+                            <DashboardStatCard
+                                title="Total Earnings"
+                                value="₹25,400"
+                                subtitle="Current month"
+                                icon={IndianRupee}
+                            />
+
+                            <DashboardStatCard
+                                title="Deliveries"
+                                value="1"
+                                subtitle="Pending delivery"
+                                icon={Truck}
+                            />
+                        </section>
+
+                        {/* Main Grid */}
+
+                        <section
+                            className="
+                                grid
+                                grid-cols-1
+                                gap-6
+                                xl:grid-cols-3
+                            "
+                        >
+                            {/* Market Prices */}
+
+                            <div
+                                className="
+                                    rounded-2xl
+                                    border border-green-100
+                                    bg-white
+                                    p-6
+                                    shadow-sm
+                                    xl:col-span-2
+                                "
+                            >
+                                <div
+                                    className="
+                                        mb-5
+                                        flex
+                                        items-center
+                                        justify-between
+                                    "
+                                >
+                                    <div>
+                                        <h2
+                                            className="
+                                                text-lg
+                                                font-bold
+                                                text-gray-900
+                                            "
+                                        >
+                                            Today's Market Prices
+                                        </h2>
+
+                                        <p
+                                            className="
+                                                mt-1
+                                                text-sm
+                                                text-gray-500
+                                            "
+                                        >
+                                            Reference prices for
+                                            your region
+                                        </p>
+                                    </div>
+
+                                    <button
+                                        className="
+                                            hidden
+                                            items-center
+                                            gap-1
+                                            text-sm
+                                            font-semibold
+                                            text-green-600
+                                            hover:text-green-700
+                                            sm:flex
+                                        "
+                                    >
+                                        View all
+
+                                        <ArrowRight
+                                            size={16}
+                                        />
+                                    </button>
+                                </div>
+
+                                <div className="space-y-3">
+                                    <MarketPriceCard
+                                        crop="Wheat"
+                                        price="2,450"
+                                        unit="quintal"
+                                        change="+4.2%"
+                                    />
+
+                                    <MarketPriceCard
+                                        crop="Rice"
+                                        price="2,180"
+                                        unit="quintal"
+                                        change="+2.8%"
+                                    />
+
+                                    <MarketPriceCard
+                                        crop="Maize"
+                                        price="2,050"
+                                        unit="quintal"
+                                        change="+3.5%"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Farmer Profile */}
+
+                            <div
+                                className="
+                                    rounded-2xl
+                                    border border-green-100
+                                    bg-white
+                                    p-6
+                                    shadow-sm
+                                "
+                            >
+                                <div className="flex items-center gap-4">
+                                    <div
+                                        className="
+                                            flex h-14 w-14
+                                            items-center justify-center
+                                            rounded-full
+                                            bg-green-100
+                                            text-xl
+                                            font-bold
+                                            text-green-700
+                                        "
+                                    >
+                                        {user?.name
+                                            ?.charAt(0)
+                                            ?.toUpperCase()}
+                                    </div>
+
+                                    <div>
+                                        <h2
+                                            className="
+                                                font-bold
+                                                text-gray-900
+                                            "
+                                        >
+                                            {user?.name}
+                                        </h2>
+
+                                        <p
+                                            className="
+                                                text-sm
+                                                text-gray-500
+                                            "
+                                        >
+                                            {user?.village}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div
+                                    className="
+                                        mt-6
+                                        space-y-4
+                                        border-t
+                                        border-gray-100
+                                        pt-5
+                                    "
+                                >
+                                    <div>
+                                        <p
+                                            className="
+                                                text-xs
+                                                text-gray-500
+                                            "
+                                        >
+                                            Farmer Type
+                                        </p>
+
+                                        <p
+                                            className="
+                                                mt-1
+                                                text-sm
+                                                font-semibold
+                                                text-gray-900
+                                            "
+                                        >
+                                            {isSmallFarmer
+                                                ? "Small / Marginal Farmer"
+                                                : "Large Farmer / FPO"}
+                                        </p>
+                                    </div>
+
+                                    <div>
+                                        <p
+                                            className="
+                                                text-xs
+                                                text-gray-500
+                                            "
+                                        >
+                                            Produce Interest
+                                        </p>
+
+                                        <p
+                                            className="
+                                                mt-1
+                                                text-sm
+                                                font-semibold
+                                                text-gray-900
+                                            "
+                                        >
+                                            {user?.produceInterest ||
+                                                "Not specified"}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* Quick Actions */}
+
+                        <section className="mt-6">
+                            <div className="mb-4">
+                                <h2
+                                    className="
+                                        text-lg
+                                        font-bold
+                                        text-gray-900
+                                    "
+                                >
+                                    Quick Actions
+                                </h2>
+
+                                <p
+                                    className="
+                                        mt-1
+                                        text-sm
+                                        text-gray-500
+                                    "
+                                >
+                                    Common actions for your
+                                    farming activity
+                                </p>
+                            </div>
+
+                            <div
+                                className="
+                                    grid
+                                    grid-cols-1
+                                    gap-4
+                                    md:grid-cols-3
+                                "
+                            >
+                                <QuickActionCard
+                                    title="Add New Produce"
+                                    description="Create a new produce listing"
+                                    icon={Plus}
+                                />
+
+                                <QuickActionCard
+                                    title="Check Market Prices"
+                                    description="Compare today's prices"
+                                    icon={TrendingUp}
+                                />
+
+                                <QuickActionCard
+                                    title="View My Deals"
+                                    description="Track your active trades"
+                                    icon={Handshake}
+                                />
+                            </div>
+                        </section>
                     </div>
-
-                    <div className="rounded-full bg-green-100 px-4 py-2 text-sm font-semibold text-green-700">
-                        Farmer
-                    </div>
-
-                    <LogoutButton/>
-                </div>
-
-                {/* Stats */}
-                <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-
-                    <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
-                        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-green-50">
-                            <Package className="h-5 w-5 text-green-600" />
-                        </div>
-
-                        <p className="mt-5 text-sm text-gray-500">
-                            Active Listings
-                        </p>
-
-                        <p className="mt-1 text-3xl font-bold text-gray-900">
-                            0
-                        </p>
-                    </div>
-
-                    <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
-                        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-50">
-                            <TrendingUp className="h-5 w-5 text-blue-600" />
-                        </div>
-
-                        <p className="mt-5 text-sm text-gray-500">
-                            Market Opportunities
-                        </p>
-
-                        <p className="mt-1 text-3xl font-bold text-gray-900">
-                            0
-                        </p>
-                    </div>
-
-                    <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
-                        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-50">
-                            <Leaf className="h-5 w-5 text-amber-600" />
-                        </div>
-
-                        <p className="mt-5 text-sm text-gray-500">
-                            Farmer Type
-                        </p>
-
-                        <p className="mt-1 text-xl font-bold text-gray-900">
-                            {user?.farmerType === "SMALL"
-                                ? "Small / Marginal"
-                                : "Large / FPO"}
-                        </p>
-                    </div>
-
-                </div>
-
-                {/* Welcome Card */}
-                <div className="mt-6 rounded-3xl bg-green-700 p-7 text-white shadow-lg">
-                    <p className="text-sm font-semibold text-green-100">
-                        FARMER DASHBOARD
-                    </p>
-
-                    <h2 className="mt-2 text-2xl font-bold">
-                        Your agricultural marketplace starts here.
-                    </h2>
-
-                    <p className="mt-3 max-w-2xl text-sm leading-6 text-green-50">
-                        Soon you will be able to create produce listings,
-                        discover market prices, negotiate directly with
-                        buyers, manage deals and track deliveries.
-                    </p>
-                </div>
-
+                </main>
             </div>
-        </main>
+        </div>
     );
 };
 
