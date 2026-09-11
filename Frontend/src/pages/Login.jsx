@@ -7,7 +7,7 @@ import {
     verifyLoginOtp,
 } from "../services/authServices.js";
 
-import { useAuth } from "../context/Authcontext";
+import { useAuth } from "../context/AuthContext.jsx";
 
 const Login = () => {
     const navigate = useNavigate();

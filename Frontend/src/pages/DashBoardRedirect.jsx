@@ -5,7 +5,9 @@ import { useAuth } from "../context/AuthContext";
 const DashboardRedirect = () => {
     const { user } = useAuth();
 
-    if (user?.role === "FARMER") {
+    const role = user.role?.toUpperCase();
+
+    if (role === "FARMER") {
         return (
             <Navigate
                 to="/farmer/dashboard"
@@ -14,7 +16,7 @@ const DashboardRedirect = () => {
         );
     }
 
-    if (user?.role === "BUYER") {
+    if (role === "BUYER") {
         return (
             <Navigate
                 to="/buyer/dashboard"

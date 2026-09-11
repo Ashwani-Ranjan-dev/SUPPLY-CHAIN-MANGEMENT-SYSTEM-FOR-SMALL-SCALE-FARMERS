@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 
 import { useAuth } from "../../context/AuthContext";
+import LogoutButton from "../../components/auth/LogoutButton";
 
 const FarmerDashboard = () => {
     const { user } = useAuth();
@@ -40,6 +41,8 @@ const FarmerDashboard = () => {
                     <div className="rounded-full bg-green-100 px-4 py-2 text-sm font-semibold text-green-700">
                         Farmer
                     </div>
+
+                    <LogoutButton/>
                 </div>
 
                 {/* Stats */}

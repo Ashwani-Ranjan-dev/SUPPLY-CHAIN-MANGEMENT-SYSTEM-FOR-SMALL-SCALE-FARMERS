@@ -7,6 +7,7 @@ import {
 
 import {
     getCurrentUser,
+    logoutUser,
 } from "../services/authServices.js";
 
 const AuthContext =
@@ -39,6 +40,18 @@ export const AuthProvider = ({
         checkAuth();
     }, []);
 
+    const logout = async()=>{
+            try{
+                await logoutUser();
+            }
+            catch(error){
+                console.error("Logout error: " , error);
+            }
+            finally{
+                setUser(null);
+            }
+        }
+
     const value = {
         user,
         setUser,
@@ -46,6 +59,7 @@ export const AuthProvider = ({
         isAuthenticated:
             Boolean(user),
         checkAuth,
+        logout,
     };
 
     return (

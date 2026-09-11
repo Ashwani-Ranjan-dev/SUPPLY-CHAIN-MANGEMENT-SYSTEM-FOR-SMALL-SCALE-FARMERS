@@ -581,10 +581,25 @@ export const logout = async (
     req,
     res
 ) => {
-    res.clearCookie("token");
+    try{
+        res.clearCookie("token" , {
+            httpOnly : true,
+            secure : process.env.NODE_ENV === "production",
+            sameSite :
+                process.env.NODE_ENV === "production" ? "none " : "lax" , 
+            path : "/",
+        });
 
-    return res.status(200).json({
-        message:
-            "Logged out successfully.",
-    });
+        return res.status(200).json({
+            success : true,
+            message : "Logged out Sucessfully.",
+        });
+    }catch(error){
+        console.error("Logout error: " , error);
+
+        return res.status(500).json({
+            success : false,
+            message : "Unable to Logout"
+        });
+    }
 };

@@ -6,7 +6,7 @@ import {
 
 import {
     useAuth,
-} from "../../context/Authcontext";
+} from "../../context/AuthContext";
 
 const ProtectedRoute = () => {
     const {

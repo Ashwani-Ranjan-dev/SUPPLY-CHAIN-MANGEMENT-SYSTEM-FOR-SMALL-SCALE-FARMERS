@@ -7,6 +7,8 @@ import {
 
 import { useAuth } from "../../context/AuthContext";
 
+import LogoutButton from "../../components/auth/LogoutButton";
+
 const BuyerDashboard = () => {
     const { user } = useAuth();
 
@@ -36,6 +38,8 @@ const BuyerDashboard = () => {
                     <div className="rounded-full bg-blue-100 px-4 py-2 text-sm font-semibold text-blue-700">
                         Buyer
                     </div>
+
+                    <LogoutButton />
                 </div>
 
                 {/* Stats */}

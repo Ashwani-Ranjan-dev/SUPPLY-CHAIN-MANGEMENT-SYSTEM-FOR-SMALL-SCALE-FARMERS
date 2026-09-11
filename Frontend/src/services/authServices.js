@@ -145,7 +145,7 @@ export const getCurrentUser = async () => {
     return data;
 };
 
-export const logout = async () => {
+export const logoutUser = async () => {
     const response = await fetch(
         `${API_URL}/auth/logout`,
         {
