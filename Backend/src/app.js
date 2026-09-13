@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import userRoutes from "./routes/userRoutes.js";
 import authroutes from "./routes/authroutes.js";
 import cookieParser from "cookie-parser";
+import FarmerRoutes from "./routes/farmerroutes.js";
 
 const app = express();
 
@@ -32,5 +33,7 @@ app.get("/api/health", (req, res) => {
 app.use("/api/users" , userRoutes);
 
 app.use("/api/auth" , authroutes);
+
+app.use("/api/farmer" , FarmerRoutes);
 
 export default app;
