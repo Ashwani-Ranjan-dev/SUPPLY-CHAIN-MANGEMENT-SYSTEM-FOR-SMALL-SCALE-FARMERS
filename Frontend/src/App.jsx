@@ -9,7 +9,7 @@ import BuyerDashboard from "./pages/Buyer/buyerDashboard";
 import FarmerDashboard from "./pages/Farmer/FarmerDashboard";
 import Unauthorized from "./pages/Unauthorized";
 import DashboardRedirect from "./pages/DashBoardRedirect"; 
-
+import AddProduce from "./pages/Farmer/AddProducePage";
 
 const App = () => {
     return (
@@ -27,6 +27,7 @@ const App = () => {
 
                         <Route element={<RoleRoute allowedRoles={["FARMER"]} />}>
                             <Route path="/farmer/dashboard" element={<FarmerDashboard />} />
+                            <Route path="/farmer/produce/new" element={<AddProduce/>}/>
                         </Route>
 
                         <Route element={<RoleRoute allowedRoles={["BUYER"]} />}>

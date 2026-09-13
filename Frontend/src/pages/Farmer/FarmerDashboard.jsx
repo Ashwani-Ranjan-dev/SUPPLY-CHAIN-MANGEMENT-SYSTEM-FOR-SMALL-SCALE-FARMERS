@@ -17,8 +17,10 @@ import MarketPriceCard from "../../components/Farmer/MarketPriceCard";
 import QuickActionCard from "../../components/Farmer/QuickActionCard";
 import { useEffect, useState } from "react";
 import { getFarmerDashboard } from "../../services/farmerServices.js";
+import { useNavigate } from "react-router-dom";
 
 const FarmerDashboard = () => {
+    const navigate = useNavigate();
     const { user } = useAuth();
     const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -110,8 +112,9 @@ const FarmerDashboard = () => {
                                     </p>
                                 </div>
 
-                                <button className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-green-700 transition hover:bg-green-50">
-                                    <Plus size={18} />
+                                <button className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-green-700 transition hover:bg-green-50"
+                                onClick= {()=>navigate("/farmer/produce/new")}>
+                                    <Plus size={18}/>
                                     Add Produce
                                 </button>
                             </div>
@@ -238,6 +241,7 @@ const FarmerDashboard = () => {
                                     title="Add New Produce"
                                     description="Create a new produce listing"
                                     icon={Plus}
+                                    onClick={()=> navigate("/farmer/produce/new")}
                                 />
                                 <QuickActionCard
                                     title="Check Market Prices"

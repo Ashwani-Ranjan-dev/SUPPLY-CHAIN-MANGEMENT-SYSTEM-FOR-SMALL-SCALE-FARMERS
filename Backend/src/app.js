@@ -5,6 +5,7 @@ import userRoutes from "./routes/userRoutes.js";
 import authroutes from "./routes/authroutes.js";
 import cookieParser from "cookie-parser";
 import FarmerRoutes from "./routes/farmerroutes.js";
+import ProduceRoutes from "./routes/produceroutes.js";
 
 const app = express();
 
@@ -35,5 +36,7 @@ app.use("/api/users" , userRoutes);
 app.use("/api/auth" , authroutes);
 
 app.use("/api/farmer" , FarmerRoutes);
+
+app.use("/api/produce" , ProduceRoutes);
 
 export default app;
