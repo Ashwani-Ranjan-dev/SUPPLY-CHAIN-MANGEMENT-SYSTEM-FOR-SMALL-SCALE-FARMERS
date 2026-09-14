@@ -160,6 +160,16 @@ const FarmerSidebar = ({
                         return (
                             <button
                                 key={item.label}
+                                onClick={()=>{
+                                    if(item.label === "Dashboard"){
+                                        navigate("/farmer/dashboard")
+                                    }
+                                    if(item.label === "My Produce"){
+                                        navigate("/farmer/produce")
+                                    }
+
+                                    setMobileOpen(false);
+                                }}
                                 className={`
                                     flex w-full
                                     items-center gap-3

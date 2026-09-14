@@ -100,3 +100,49 @@ export const createProduce = async (
         });
     }
 };
+
+export const getMyProduce = async (req, res) => {
+    try {
+        const farmer =
+            await User.findById(req.user.id);
+
+        if (!farmer) {
+            return res.status(404).json({
+                success: false,
+                message: "Farmer not found.",
+            });
+        }
+
+        if (farmer.role !== "FARMER") {
+            return res.status(403).json({
+                success: false,
+                message:
+                    "Only farmers can access their produce listings.",
+            });
+        }
+
+        const produce =
+            await Produce.find({
+                farmer: farmer._id,
+            }).sort({
+                createdAt: -1,
+            });
+
+        return res.status(200).json({
+            success: true,
+            count: produce.length,
+            produce,
+        });
+    } catch (error) {
+        console.error(
+            "Get my produce error:",
+            error
+        );
+
+        return res.status(500).json({
+            success: false,
+            message:
+                "Unable to load your produce listings.",
+        });
+    }
+};

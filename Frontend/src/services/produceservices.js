@@ -24,3 +24,24 @@ if(!response.ok){
 
 return data;
 }
+
+// Frontend Services for GetmyProduce
+export const getMyProduce = async() =>{
+    const response = await fetch(`${API_URL}/produce/my` , 
+        {
+            method : "GET",
+            credentials: "include",
+        }
+    );
+
+    const data = await response.json();
+
+    if(!response.ok){
+        throw new Error(
+            data.message || 
+                "Unable to load your produce"
+        );
+    }
+
+    return data;
+}
