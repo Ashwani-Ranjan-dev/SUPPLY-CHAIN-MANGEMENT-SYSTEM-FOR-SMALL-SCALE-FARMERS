@@ -11,6 +11,7 @@ import Unauthorized from "./pages/Unauthorized";
 import DashboardRedirect from "./pages/DashBoardRedirect"; 
 import AddProduce from "./pages/Farmer/AddProducePage";
 import MyProduce from "./pages/Farmer/MyProduce";
+import EditProduce from "./pages/Farmer/EditProduce";
 
 const App = () => {
     return (
@@ -30,6 +31,7 @@ const App = () => {
                             <Route path="/farmer/dashboard" element={<FarmerDashboard />} />
                             <Route path="/farmer/produce/new" element={<AddProduce/>}/>
                             <Route path="/farmer/produce" element={<MyProduce/>}/>
+                            <Route path="/farmer/produce/:id/edit" element={<EditProduce />}/>
                         </Route>
 
                         <Route element={<RoleRoute allowedRoles={["BUYER"]} />}>

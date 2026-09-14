@@ -8,6 +8,8 @@ import {
     Package,
     Loader2,
     Search,
+    Pencil,
+    Trash2
 } from "lucide-react";
 
 import { useEffect, useMemo, useState } from "react";
@@ -15,6 +17,7 @@ import { useNavigate } from "react-router-dom";
 
 import {
     getMyProduce,
+    deleteProduce
 } from "../../services/produceservices.js";
 
 const MyProduce = () => {
@@ -34,6 +37,16 @@ const MyProduce = () => {
 
     const [search, setSearch] =
         useState("");
+
+    const [deleteTarget, setDeleteTarget] =
+        useState(null);
+
+    const [deleting, setDeleting] =
+        useState(false);
+
+    const [actionError, setActionError] =
+        useState("");
+
 
     useEffect(() => {
         const loadProduce = async () => {
@@ -55,7 +68,7 @@ const MyProduce = () => {
 
                 setError(
                     error.message ||
-                        "Unable to load your produce."
+                    "Unable to load your produce."
                 );
             } finally {
                 setLoading(false);
@@ -89,6 +102,41 @@ const MyProduce = () => {
             filter,
             search,
         ]);
+
+    const handleDelete = async () => {
+        if (!deleteTarget) return;
+
+        try {
+            setDeleting(true);
+            setActionError("");
+
+            await deleteProduce(
+                deleteTarget._id
+            );
+
+            setProduce((previous) =>
+                previous.map((item) =>
+                    item._id ===
+                        deleteTarget._id
+                        ? {
+                            ...item,
+                            status: "INACTIVE",
+                        }
+                        : item
+                )
+            );
+
+            setDeleteTarget(null);
+        } catch (error) {
+            setActionError(
+                error.message ||
+                "Unable to remove listing."
+            );
+        } finally {
+            setDeleting(false);
+        }
+    };
+
 
     const formatDate = (date) => {
         if (!date) return "-";
@@ -456,11 +504,10 @@ const MyProduce = () => {
                                         text-xs
                                         font-bold
                                         transition
-                                        ${
-                                            filter ===
+                                        ${filter ===
                                             item
-                                                ? "bg-green-600 text-white"
-                                                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                                            ? "bg-green-600 text-white"
+                                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                                         }
                                     `}
                                 >
@@ -660,8 +707,8 @@ const MyProduce = () => {
                                                 text-[11px]
                                                 font-bold
                                                 ${getStatusStyle(
-                                                    item.status
-                                                )}
+                                                item.status
+                                            )}
                                             `}
                                         >
                                             {item.status}
@@ -762,10 +809,93 @@ const MyProduce = () => {
                                                 )}
                                             </span>
                                         </div>
+
+                                        {/* Action Buttons */}
+                                        <div className="mt-5 flex gap-3 border-t border-gray-100 pt-4">
+
+                                            <button
+                                                type="button"
+                                                disabled={
+                                                    item.status !== "ACTIVE"
+                                                }
+                                                onClick={() =>
+                                                    navigate(
+                                                        `/farmer/produce/${item._id}/edit`
+                                                    )
+                                                }
+                                                className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-green-200 bg-green-50 px-4 py-2.5 text-sm font-semibold text-green-700 transition hover:bg-green-100 disabled:cursor-not-allowed disabled:opacity-40"
+                                            >
+                                                <Pencil size={16} />
+                                                Edit
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                disabled={
+                                                    item.status !== "ACTIVE"
+                                                }
+                                                onClick={() =>
+                                                    setDeleteTarget(item)
+                                                }
+                                                className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-40"
+                                            >
+                                                <Trash2 size={16} />
+                                                Delete
+                                            </button>
+
+                                        </div>
                                     </div>
                                 </div>
-                            )
-                        )}
+                            ))}
+                    </div>
+                )}
+
+                {/* Delete Confirmation Modal */}
+                {deleteTarget && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm">
+                        <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-50 text-red-600">
+                                <Trash2 size={22} />
+                            </div>
+
+                            <h2 className="mt-5 text-xl font-bold text-gray-900">
+                                Remove this listing?
+                            </h2>
+
+                            <p className="mt-2 text-sm leading-6 text-gray-500">
+                                Your listing for{" "}
+                                <span className="font-semibold text-gray-700">
+                                    {deleteTarget.crop}
+                                </span>{" "}
+                                will be moved to inactive listings.
+                            </p>
+
+                            {actionError && (
+                                <div className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
+                                    {actionError}
+                                </div>
+                            )}
+
+                            <div className="mt-6 flex gap-3">
+                                <button
+                                    type="button"
+                                    disabled={deleting}
+                                    onClick={() => setDeleteTarget(null)}
+                                    className="flex-1 rounded-xl border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-600 hover:bg-gray-50 disabled:opacity-50"
+                                >
+                                    Cancel
+                                </button>
+
+                                <button
+                                    type="button"
+                                    disabled={deleting}
+                                    onClick={handleDelete}
+                                    className="flex-1 rounded-xl bg-red-600 px-4 py-3 text-sm font-bold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+                                >
+                                    {deleting ? "Removing..." : "Remove Listing"}
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 )}
             </div>
