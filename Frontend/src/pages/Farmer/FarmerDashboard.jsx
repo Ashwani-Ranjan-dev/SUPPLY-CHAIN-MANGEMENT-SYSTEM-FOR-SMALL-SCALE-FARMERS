@@ -18,6 +18,7 @@ import QuickActionCard from "../../components/Farmer/QuickActionCard";
 import { useEffect, useState } from "react";
 import { getFarmerDashboard } from "../../services/farmerServices.js";
 import { useNavigate } from "react-router-dom";
+import { getMarketPrice } from "../../services/MarketPriceServices.js";
 
 const FarmerDashboard = () => {
     const navigate = useNavigate();
@@ -28,6 +29,9 @@ const FarmerDashboard = () => {
     const [dashboardData, setDashboardData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [marketPrices, setMarketPrices] = useState([]);
+    const [marketPricesLoading, setMarketPricesLoading] = useState(true);
+
 
     useEffect(() => {
         const loadDashboard = async () => {
@@ -45,6 +49,35 @@ const FarmerDashboard = () => {
         };
 
         loadDashboard();
+    }, []);
+
+    useEffect(() => {
+        const loadMarketPrices =
+            async () => {
+                try {
+                    setMarketPricesLoading(
+                        true
+                    );
+
+                    const data =
+                        await getMarketPrice();
+
+                    setMarketPrices(
+                        data.prices.slice(0, 3)
+                    );
+                } catch (error) {
+                    console.error(
+                        "Market prices error:",
+                        error
+                    );
+                } finally {
+                    setMarketPricesLoading(
+                        false
+                    );
+                }
+            };
+
+        loadMarketPrices();
     }, []);
 
     const isSmallFarmer = user?.farmerType === "SMALL";
@@ -113,8 +146,8 @@ const FarmerDashboard = () => {
                                 </div>
 
                                 <button className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-green-700 transition hover:bg-green-50"
-                                onClick= {()=>navigate("/farmer/produce/new")}>
-                                    <Plus size={18}/>
+                                    onClick={() => navigate("/farmer/produce/new")}>
+                                    <Plus size={18} />
                                     Add Produce
                                 </button>
                             </div>
@@ -167,27 +200,27 @@ const FarmerDashboard = () => {
                                         <ArrowRight size={16} />
                                     </button>
                                 </div>
-
-                                <div className="space-y-3">
-                                    <MarketPriceCard
-                                        crop="Wheat"
-                                        price="2,450"
-                                        unit="quintal"
-                                        change="+4.2%"
-                                    />
-                                    <MarketPriceCard
-                                        crop="Rice"
-                                        price="2,180"
-                                        unit="quintal"
-                                        change="+2.8%"
-                                    />
-                                    <MarketPriceCard
-                                        crop="Maize"
-                                        price="2,050"
-                                        unit="quintal"
-                                        change="+3.5%"
-                                    />
-                                </div>
+                                {marketPricesLoading ? (
+                                    <div className="grid gap-4 md:grid-cols-3">
+                                        {[1, 2, 3].map((item) => (
+                                            <div
+                                                key={item}
+                                                className="h-32 animate-pulse rounded-2xl bg-gray-200"
+                                            />
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="grid gap-4 md:grid-cols-3">
+                                        {marketPrices.map((price) => (
+                                            <MarketPriceCard
+                                                key={price._id}
+                                                crop={price.crop}
+                                                price={price.modalPrice}
+                                                unit={price.unit}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
                             </div>
 
                             {/* Farmer Profile */}
@@ -241,7 +274,7 @@ const FarmerDashboard = () => {
                                     title="Add New Produce"
                                     description="Create a new produce listing"
                                     icon={Plus}
-                                    onClick={()=> navigate("/farmer/produce/new")}
+                                    onClick={() => navigate("/farmer/produce/new")}
                                 />
                                 <QuickActionCard
                                     title="Check Market Prices"
