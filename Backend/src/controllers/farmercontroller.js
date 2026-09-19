@@ -1,4 +1,6 @@
 import User from "../models/userSchema.js";
+import Deal from "../models/DealSchema.js";
+import Produce from "../models/ProduceSchema.js";
 
 export const getfarmerDashboard = async (req, res) => {
 
@@ -23,6 +25,23 @@ export const getfarmerDashboard = async (req, res) => {
             });
         }
 
+        const [
+            activeProduce,
+            activeDeals,
+        ] = await Promise.all([
+            Produce.countDocuments({
+                farmer: farmer._id,
+                status: "ACTIVE",
+            }),
+
+            Deal.countDocuments({
+                farmer: farmer._id,
+                status: {
+                    $in: ["PENDING", "ACCEPTED"],
+                },
+            }),
+        ]);
+
         return res.status(200).json({
             success: true,
             farmer: {
@@ -40,19 +59,19 @@ export const getfarmerDashboard = async (req, res) => {
             },
 
             stats: {
-                activeProduce: 0,
-                activeDeals: 0,
+                activeProduce,
+                activeDeals,
                 totalEarnings: 0,
                 pendingDeliveries: 0,
             },
         });
     }
-    catch(error){
-        console.error("Get farmer Dashboard error: " , error);
+    catch (error) {
+        console.error("Get farmer Dashboard error: ", error);
 
         return res.status(500).json({
             success: false,
-            message : "Unable to load Farmer Dashboard"
+            message: "Unable to load Farmer Dashboard"
         });
     }
 };

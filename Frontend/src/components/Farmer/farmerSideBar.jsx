@@ -170,7 +170,9 @@ const FarmerSidebar = ({
                                     if(item.label === "Market Prices"){
                                         navigate("/farmer/market-prices")
                                     }
-
+                                    if(item.label === "My Deals"){
+                                        navigate("/farmer/deals")
+                                    }
                                     setMobileOpen(false);
                                 }}
                                 className={`

@@ -7,6 +7,7 @@ import cookieParser from "cookie-parser";
 import FarmerRoutes from "./routes/farmerroutes.js";
 import ProduceRoutes from "./routes/produceroutes.js";
 import MarketPriceRoutes from "./routes/MarketPriceRoute.js"
+import dealRoutes from  "./routes/dealRoutes.js";
 
 const app = express();
 
@@ -41,5 +42,7 @@ app.use("/api/farmer" , FarmerRoutes);
 app.use("/api/produce" , ProduceRoutes);
 
 app.use("/api/market-prices" , MarketPriceRoutes);
+
+app.use("/api/deals" , dealRoutes);
 
 export default app;
