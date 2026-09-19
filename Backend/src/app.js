@@ -8,6 +8,7 @@ import FarmerRoutes from "./routes/farmerroutes.js";
 import ProduceRoutes from "./routes/produceroutes.js";
 import MarketPriceRoutes from "./routes/MarketPriceRoute.js"
 import dealRoutes from  "./routes/dealRoutes.js";
+import PaymentRoutes from "./routes/paymentRoutes.js";
 
 const app = express();
 
@@ -44,5 +45,7 @@ app.use("/api/produce" , ProduceRoutes);
 app.use("/api/market-prices" , MarketPriceRoutes);
 
 app.use("/api/deals" , dealRoutes);
+
+app.use("/api/payments" , PaymentRoutes);
 
 export default app;

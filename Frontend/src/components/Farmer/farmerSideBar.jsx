@@ -8,6 +8,7 @@ import {
     Bell,
     LogOut,
     X,
+    CreditCard,
 } from "lucide-react";
 
 import { useAuth } from "../../context/AuthContext";
@@ -44,6 +45,10 @@ const FarmerSidebar = ({
         {
             label: "My Deals",
             icon: Handshake,
+        },
+        {
+            label : "Payments",
+            icon : CreditCard,
         },
         {
             label: "Deliveries",
@@ -172,6 +177,9 @@ const FarmerSidebar = ({
                                     }
                                     if(item.label === "My Deals"){
                                         navigate("/farmer/deals")
+                                    }
+                                    if(item.label === "Payments"){
+                                        navigate("/farmer/payments")
                                     }
                                     setMobileOpen(false);
                                 }}

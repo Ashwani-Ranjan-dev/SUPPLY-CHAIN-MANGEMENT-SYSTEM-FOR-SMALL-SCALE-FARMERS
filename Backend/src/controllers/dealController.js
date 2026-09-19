@@ -1,6 +1,7 @@
 import Deal from "../models/DealSchema.js";
 import User from "../models/userSchema.js";
 import Produce from "../models/ProduceSchema.js";
+import Payment from "../models/PaymentSchema.js";
 
 // Create Deal
 export const createDeal = async (req, res) => {
@@ -215,10 +216,31 @@ export const acceptDeal = async (req, res) => {
 
         await deal.save();
 
+        const payment = await Payment.findOneAndUpdate(
+            {
+                deal: deal._id,
+            },
+            {
+                deal: deal._id,
+                farmer: deal.farmer,
+                buyer: deal.buyer,
+                amount: deal.totalAmount,
+                currency: "INR",
+                status: "PENDING",
+            },
+            {
+                new: true,
+                upsert: true,
+                setDefaultsOnInsert: true,
+            }
+        );
+
         return res.status(200).json({
             success: true,
-            message: "Deal accepted successfully.",
+            message:
+                "Deal accepted and payment record created.",
             deal,
+            payment,
         });
     } catch (error) {
         console.error("Accept deal error:", error);
