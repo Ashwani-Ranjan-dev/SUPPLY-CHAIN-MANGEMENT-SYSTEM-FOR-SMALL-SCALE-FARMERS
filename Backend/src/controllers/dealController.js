@@ -2,6 +2,7 @@ import Deal from "../models/DealSchema.js";
 import User from "../models/userSchema.js";
 import Produce from "../models/ProduceSchema.js";
 import Payment from "../models/PaymentSchema.js";
+import Delivery from "../models/DeliverySchema.js";
 
 // Create Deal
 export const createDeal = async (req, res) => {
@@ -235,14 +236,42 @@ export const acceptDeal = async (req, res) => {
             }
         );
 
+        const delivery = await Delivery.findOneAndUpdate(
+            {
+                deal: deal._id,
+            },
+            {
+                deal: deal._id,
+                farmer: deal.farmer,
+                buyer: deal.buyer,
+                produce: deal.produce,
+                quantity: deal.quantity,
+                unit: deal.unit,
+                pickupLocation: "Farmer Location",
+                deliveryLocation: "Buyer Location",
+                status: "NOT_ASSIGNED",
+                paymentStatus: payment.status === "PAID"
+                    ? "PAID"
+                    : "PENDING",
+            },
+            {
+                new: true,
+                upsert: true,
+                setDefaultsOnInsert: true,
+            }
+        );
+
         return res.status(200).json({
             success: true,
             message:
-                "Deal accepted and payment record created.",
+                "Deal accepted successfully.",
             deal,
             payment,
+            delivery,
         });
-    } catch (error) {
+    }
+
+    catch (error) {
         console.error("Accept deal error:", error);
 
         return res.status(500).json({

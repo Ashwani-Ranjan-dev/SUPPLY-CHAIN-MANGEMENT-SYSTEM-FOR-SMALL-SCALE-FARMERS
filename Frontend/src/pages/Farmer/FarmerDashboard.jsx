@@ -280,11 +280,13 @@ const FarmerDashboard = () => {
                                     title="Check Market Prices"
                                     description="Compare today's prices"
                                     icon={TrendingUp}
+                                    onClick={()=> navigate("/farmer/market-prices")}
                                 />
                                 <QuickActionCard
                                     title="View My Deals"
                                     description="Track your active trades"
                                     icon={Handshake}
+                                    onClick={()=> navigate("/farmer/deals")}
                                 />
                             </div>
                         </section>

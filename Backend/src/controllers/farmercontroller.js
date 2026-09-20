@@ -1,6 +1,7 @@
 import User from "../models/userSchema.js";
 import Deal from "../models/DealSchema.js";
 import Produce from "../models/ProduceSchema.js";
+import Delivery from "../models/DeliverySchema.js";
 
 export const getfarmerDashboard = async (req, res) => {
 
@@ -28,6 +29,7 @@ export const getfarmerDashboard = async (req, res) => {
         const [
             activeProduce,
             activeDeals,
+            pendingDeliveries
         ] = await Promise.all([
             Produce.countDocuments({
                 farmer: farmer._id,
@@ -41,6 +43,16 @@ export const getfarmerDashboard = async (req, res) => {
                 },
             }),
         ]);
+
+          Delivery.countDocuments({
+        farmer: farmer._id,
+        status: {
+            $nin: [
+                "DELIVERED",
+                "CANCELLED",
+            ],
+        },
+    });
 
         return res.status(200).json({
             success: true,
@@ -62,7 +74,7 @@ export const getfarmerDashboard = async (req, res) => {
                 activeProduce,
                 activeDeals,
                 totalEarnings: 0,
-                pendingDeliveries: 0,
+                pendingDeliveries,
             },
         });
     }

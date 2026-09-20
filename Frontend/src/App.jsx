@@ -15,6 +15,7 @@ import EditProduce from "./pages/Farmer/EditProduce";
 import MarketPrices from "./pages/Farmer/MarketPrice";
 import FarmerDeals from "./pages/Farmer/FarmerDeal";
 import FarmerPayments from "./pages/Farmer/FarmerPayments";
+import FarmerDeliveries from "./pages/Farmer/FarmerDeliveries";
 
 const App = () => {
     return (
@@ -37,6 +38,7 @@ const App = () => {
                             <Route path="/farmer/produce/:id/edit" element={<EditProduce />}/>
                             <Route path="/farmer/market-prices" element={<MarketPrices/>}/>
                             <Route path="/farmer/deals" element={<FarmerDeals/>}/>
+                            <Route path="/farmer/deliveries" element={<FarmerDeliveries/>}/>
                         </Route>
 
                         <Route element={<RoleRoute allowedRoles={["BUYER"]} />}>
