@@ -10,6 +10,7 @@ import MarketPriceRoutes from "./routes/MarketPriceRoute.js"
 import dealRoutes from  "./routes/dealRoutes.js";
 import PaymentRoutes from "./routes/paymentRoutes.js";
 import DeliveryRoutes from "./routes/deliveryRoutes.js";
+import ledgerRoutes from "./routes/ledgerroutes.js";
 
 const app = express();
 
@@ -50,5 +51,7 @@ app.use("/api/deals" , dealRoutes);
 app.use("/api/payments" , PaymentRoutes);
 
 app.use("/api/deliveries" , DeliveryRoutes);
+
+app.use("/api/ledger" , ledgerRoutes);
 
 export default app;

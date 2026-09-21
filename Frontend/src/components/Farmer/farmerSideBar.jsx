@@ -184,6 +184,9 @@ const FarmerSidebar = ({
                                     if(item.label === "Deliveries"){
                                         navigate("/farmer/deliveries")
                                     }
+                                    if(item.label === "Ledger"){
+                                        navigate("/farmer/ledger")
+                                    }
                                     setMobileOpen(false);
                                 }}
                                 className={`
