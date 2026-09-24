@@ -155,23 +155,22 @@ export const updateDeliveryStatus = async (
                     "Delivery not found or access denied.",
             });
         }
+        const allowedTransitions = {
+            NOT_ASSIGNED: ["ASSIGNED"],
+            ASSIGNED: ["PICKED_UP"],
+            PICKED_UP: ["IN_TRANSIT"],
+            IN_TRANSIT: ["DELIVERED"],
+            DELIVERED: [],
+            CANCELLED: [],
+        };
 
-        const allowedStatuses = [
-            "ASSIGNED",
-            "PICKED_UP",
-            "IN_TRANSIT",
-            "DELIVERED",
-        ];
+        const nextStatuses =
+            allowedTransitions[delivery.status] || [];
 
-        const { status } = req.body;
-
-        if (
-            !allowedStatuses.includes(status)
-        ) {
+        if (!nextStatuses.includes(status)) {
             return res.status(400).json({
                 success: false,
-                message:
-                    "Invalid delivery status.",
+                message: `Invalid delivery status transition from ${delivery.status} to ${status}.`,
             });
         }
 
@@ -194,6 +193,33 @@ export const updateDeliveryStatus = async (
         }
 
         await delivery.save();
+
+        // Notify Delivery to Buyer
+        await createNotification({
+            recipient: delivery.buyer,
+            type: "DELIVERY_UPDATED",
+            title: "Delivery status updated",
+            message: `Your delivery status is now ${delivery.status.replace(
+                /_/g,
+                " "
+            )}.`,
+            entityType: "DELIVERY",
+            entityId: delivery._id,
+        });
+
+        // Notify Delivery to the Farmer
+        await createNotification({
+            recipient: delivery.farmer,
+            type: "DELIVERY_UPDATED",
+            title: "Delivery status updated",
+            message: `Delivery status changed to ${delivery.status.replace(
+                /_/g,
+                " "
+            )}.`,
+            entityType: "DELIVERY",
+            entityId: delivery._id,
+        });
+
 
         return res.status(200).json({
             success: true,

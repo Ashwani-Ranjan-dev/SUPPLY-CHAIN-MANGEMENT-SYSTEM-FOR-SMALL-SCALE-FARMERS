@@ -3,12 +3,42 @@ import {
     Bell,
 } from "lucide-react";
 
+import {useState } from "react";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+
 import { useAuth } from "../../context/AuthContext";
+import {
+    getUnreadNotificationCount,
+} from "../../services/notificationServices";
 
 const FarmerHeader = ({
     setMobileOpen,
 }) => {
     const { user } = useAuth();
+
+    const navigate = useNavigate();
+
+    const [unreadCount, setUnreadCount] = useState(0);
+
+    // Load unread notification count
+    const loadUnreadCount = async () => {
+        try {
+            const data = await getUnreadNotificationCount();
+
+            setUnreadCount(data.unreadCount);
+        } catch (error) {
+            console.error(
+                "Error loading unread notification count:",
+                error
+            );
+        }
+    };
+
+    // Load count when header mounts
+    useEffect(() => {
+        loadUnreadCount();
+    }, []);
 
     return (
         <header
@@ -22,6 +52,7 @@ const FarmerHeader = ({
                 px-4 sm:px-6 lg:px-8
             "
         >
+            {/* Left Section */}
             <div className="flex items-center gap-4">
                 <button
                     onClick={() =>
@@ -60,8 +91,14 @@ const FarmerHeader = ({
                 </div>
             </div>
 
+            {/* Right Section */}
             <div className="flex items-center gap-4">
+
+                {/* Notification Button */}
                 <button
+                    onClick={() =>
+                        navigate("/farmer/notifications")
+                    }
                     className="
                         relative
                         rounded-xl
@@ -72,16 +109,33 @@ const FarmerHeader = ({
                 >
                     <Bell size={20} />
 
-                    <span
-                        className="
-                            absolute right-2 top-2
-                            h-2 w-2
-                            rounded-full
-                            bg-red-500
-                        "
-                    />
+                    {unreadCount > 0 && (
+                        <span
+                            className="
+                                absolute
+                                -right-1
+                                -top-1
+                                flex
+                                h-5
+                                min-w-5
+                                items-center
+                                justify-center
+                                rounded-full
+                                bg-red-500
+                                px-1
+                                text-[10px]
+                                font-bold
+                                text-white
+                            "
+                        >
+                            {unreadCount > 99
+                                ? "99+"
+                                : unreadCount}
+                        </span>
+                    )}
                 </button>
 
+                {/* Farmer Profile */}
                 <div
                     className="
                         hidden
@@ -92,8 +146,11 @@ const FarmerHeader = ({
                 >
                     <div
                         className="
-                            flex h-10 w-10
-                            items-center justify-center
+                            flex
+                            h-10
+                            w-10
+                            items-center
+                            justify-center
                             rounded-full
                             bg-green-100
                             font-bold

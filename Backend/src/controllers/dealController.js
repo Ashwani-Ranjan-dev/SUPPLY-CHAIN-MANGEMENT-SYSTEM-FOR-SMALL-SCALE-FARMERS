@@ -3,6 +3,7 @@ import User from "../models/userSchema.js";
 import Produce from "../models/ProduceSchema.js";
 import Payment from "../models/PaymentSchema.js";
 import Delivery from "../models/DeliverySchema.js";
+import createNotification from "../utils/createNotification.js";
 
 // Create Deal
 export const createDeal = async (req, res) => {
@@ -108,6 +109,15 @@ export const createDeal = async (req, res) => {
             totalAmount,
             message: message?.trim() || "",
             status: "PENDING",
+        });
+
+        await createNotification({
+            recipient: deal.farmer,
+            type: "DEAL_OFFER",
+            title: "New buyer offer",
+            message: `A buyer has submitted an offer for ${deal.quantity} ${deal.unit}.`,
+            entityType: "DEAL",
+            entityId: deal._id,
         });
 
         return res.status(201).json({
@@ -217,6 +227,17 @@ export const acceptDeal = async (req, res) => {
 
         await deal.save();
 
+        await createNotification({
+            recipient: deal.buyer,
+            type: "DEAL_ACCEPTED",
+            title: "Deal accepted",
+            message:
+                "Your offer has been accepted by the farmer.",
+            entityType: "DEAL",
+            entityId: deal._id,
+        });
+
+
         const payment = await Payment.findOneAndUpdate(
             {
                 deal: deal._id,
@@ -324,6 +345,16 @@ export const rejectDeal = async (req, res) => {
         deal.status = "REJECTED";
 
         await deal.save();
+
+        await createNotification({
+            recipient: deal.buyer,
+            type: "DEAL_REJECTED",
+            title: "Deal rejected",
+            message:
+                "Your offer has been rejected by the farmer.",
+            entityType: "DEAL",
+            entityId: deal._id,
+        });
 
         return res.status(200).json({
             success: true,
