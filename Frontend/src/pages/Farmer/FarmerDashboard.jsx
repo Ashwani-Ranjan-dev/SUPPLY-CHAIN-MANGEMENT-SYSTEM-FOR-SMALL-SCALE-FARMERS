@@ -170,7 +170,7 @@ const FarmerDashboard = () => {
                             <DashboardStatCard
                                 title="Total Earnings"
                                 value={`₹${dashboardData?.stats?.totalEarnings ?? 0}`}
-                                subtitle="Current month"
+                                subtitle="Paid Earnings"
                                 icon={IndianRupee}
                             />
                             <DashboardStatCard

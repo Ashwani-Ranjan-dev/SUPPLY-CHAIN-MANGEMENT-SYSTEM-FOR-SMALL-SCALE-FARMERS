@@ -2,7 +2,6 @@ import Payment from "../models/PaymentSchema.js";
 import User from "../models/userSchema.js";
 import createNotification from "../utils/createNotification.js";
 
-
 // Get farmer payments
 export const getFarmerPayments = async (
     req,
