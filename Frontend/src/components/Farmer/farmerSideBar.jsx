@@ -9,6 +9,7 @@ import {
     LogOut,
     X,
     CreditCard,
+    UserCircle
 } from "lucide-react";
 
 import { useAuth } from "../../context/AuthContext";
@@ -47,8 +48,8 @@ const FarmerSidebar = ({
             icon: Handshake,
         },
         {
-            label : "Payments",
-            icon : CreditCard,
+            label: "Payments",
+            icon: CreditCard,
         },
         {
             label: "Deliveries",
@@ -61,6 +62,10 @@ const FarmerSidebar = ({
         {
             label: "Notifications",
             icon: Bell,
+        },
+        {
+            label: "My Profile",
+            icon: UserCircle,
         },
     ];
 
@@ -90,10 +95,9 @@ const FarmerSidebar = ({
                     duration-300
                     lg:static
                     lg:translate-x-0
-                    ${
-                        mobileOpen
-                            ? "translate-x-0"
-                            : "-translate-x-full"
+                    ${mobileOpen
+                        ? "translate-x-0"
+                        : "-translate-x-full"
                     }
                 `}
             >
@@ -165,30 +169,33 @@ const FarmerSidebar = ({
                         return (
                             <button
                                 key={item.label}
-                                onClick={()=>{
-                                    if(item.label === "Dashboard"){
+                                onClick={() => {
+                                    if (item.label === "Dashboard") {
                                         navigate("/farmer/dashboard")
                                     }
-                                    if(item.label === "My Produce"){
+                                    if (item.label === "My Produce") {
                                         navigate("/farmer/produce")
                                     }
-                                    if(item.label === "Market Prices"){
+                                    if (item.label === "Market Prices") {
                                         navigate("/farmer/market-prices")
                                     }
-                                    if(item.label === "My Deals"){
+                                    if (item.label === "My Deals") {
                                         navigate("/farmer/deals")
                                     }
-                                    if(item.label === "Payments"){
+                                    if (item.label === "Payments") {
                                         navigate("/farmer/payments")
                                     }
-                                    if(item.label === "Deliveries"){
+                                    if (item.label === "Deliveries") {
                                         navigate("/farmer/deliveries")
                                     }
-                                    if(item.label === "Ledger"){
+                                    if (item.label === "Ledger") {
                                         navigate("/farmer/ledger")
                                     }
-                                    if(item.label === "Notifications"){
+                                    if (item.label === "Notifications") {
                                         navigate("/farmer/notifications")
+                                    }
+                                    if(item.label === "My Profile"){
+                                        navigate("/farmer/profile")
                                     }
                                     setMobileOpen(false);
                                 }}
@@ -199,10 +206,9 @@ const FarmerSidebar = ({
                                     px-4 py-3
                                     text-sm font-medium
                                     transition
-                                    ${
-                                        item.active
-                                            ? "bg-green-50 text-green-700"
-                                            : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                                    ${item.active
+                                        ? "bg-green-50 text-green-700"
+                                        : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                                     }
                                 `}
                             >

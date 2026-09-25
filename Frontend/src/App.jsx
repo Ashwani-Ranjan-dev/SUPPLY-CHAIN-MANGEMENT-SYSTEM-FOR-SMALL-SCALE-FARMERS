@@ -18,6 +18,7 @@ import FarmerPayments from "./pages/Farmer/FarmerPayments";
 import FarmerDeliveries from "./pages/Farmer/FarmerDeliveries";
 import FarmerLedger from "./pages/Farmer/Farmerledger";
 import Notifications from "./pages/Farmer/Notifications"
+import FarmerProfile from "./pages/Farmer/FarmerProfile";
 
 const App = () => {
     return (
@@ -44,6 +45,7 @@ const App = () => {
                             <Route path="/farmer/payments" element={<FarmerPayments />} />
                             <Route path="/farmer/ledger" element={<FarmerLedger />} />
                             <Route path="/farmer/notifications" element={<Notifications />} />
+                            <Route path="/farmer/profile" element={<FarmerProfile/>}/>
                         </Route>
 
                         <Route element={<RoleRoute allowedRoles={["BUYER"]} />}>
