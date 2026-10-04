@@ -56,6 +56,37 @@ const paymentSchema = new mongoose.Schema(
             default: "PENDING",
         },
 
+
+        /*
+         * Razorpay order created by our backend.
+         */
+        razorpayOrderId: {
+            type: String,
+            trim: true,
+            default: "",
+        },
+
+        /*
+         * Razorpay payment ID returned
+         * after the buyer completes payment.
+         */
+        razorpayPaymentId: {
+            type: String,
+            trim: true,
+            default: "",
+        },
+
+        /*
+         * Signature returned by Razorpay.
+         * Used by backend to verify payment.
+         */
+        razorpaySignature: {
+            type: String,
+            trim: true,
+            default: "",
+        },
+
+        
         transactionId: {
             type: String,
             trim: true,

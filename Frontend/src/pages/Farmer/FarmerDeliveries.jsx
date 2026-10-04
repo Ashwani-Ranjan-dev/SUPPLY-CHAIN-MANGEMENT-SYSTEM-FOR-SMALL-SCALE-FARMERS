@@ -131,13 +131,12 @@ const FarmerDeliveries = () => {
         },
     };
 
-
-    const nextStatus = {
-        ASSIGNED: "PICKED_UP",
-        PICKED_UP: "IN_TRANSIT",
-        IN_TRANSIT: "DELIVERED",
-    };
-
+const nextStatus = {
+    NOT_ASSIGNED: "ASSIGNED",
+    ASSIGNED: "PICKED_UP",
+    PICKED_UP: "IN_TRANSIT",
+    IN_TRANSIT: "DELIVERED",
+};
 
     return (
         <div className="min-h-screen bg-[#f7faf7]">

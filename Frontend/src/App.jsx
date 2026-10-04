@@ -19,6 +19,7 @@ import FarmerDeliveries from "./pages/Farmer/FarmerDeliveries";
 import FarmerLedger from "./pages/Farmer/Farmerledger";
 import Notifications from "./pages/Farmer/Notifications"
 import FarmerProfile from "./pages/Farmer/FarmerProfile";
+import BuyerDeals from "./pages/Buyer/BuyerDeal";
 
 const App = () => {
     return (
@@ -50,6 +51,7 @@ const App = () => {
 
                         <Route element={<RoleRoute allowedRoles={["BUYER"]} />}>
                             <Route path="/buyer/dashboard" element={<BuyerDashboard />} />
+                            <Route path="/buyer/deals" element={<BuyerDeals/>}/>
                         </Route>
 
 

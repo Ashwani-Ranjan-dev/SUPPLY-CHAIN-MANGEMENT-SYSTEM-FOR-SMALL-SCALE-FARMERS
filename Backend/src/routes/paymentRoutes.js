@@ -1,30 +1,66 @@
 import express from "express";
+
 import { protect } from "../middleware/authMiddleware.js";
 
-import { getFarmerPayments , getPaymentById , updatePaymentStatus} from "../controllers/paymentController.js";
+import {
+    getFarmerPayments,
+    getPaymentById,
+    markPaymentAsPaid,
+    createPaymentOrder,
+    verifyPayment
+} from "../controllers/paymentController.js";
 
 const router = express.Router();
 
-// Farmer Payment History
+
+// ======================================================
+// FARMER PAYMENT HISTORY
+// ======================================================
+
 router.get(
     "/farmer",
     protect,
     getFarmerPayments
 );
 
-//Single Payment
+
+// ======================================================
+// VERIFY RAZORPAY PAYMENT
+// ======================================================
+
+router.post(
+    "/verify",
+    protect,
+    verifyPayment
+);
+
+
+// ======================================================
+// SINGLE PAYMENT
+// ======================================================
+
 router.get(
     "/:id",
     protect,
     getPaymentById
 );
 
-// Update Payment Status
+
+// ======================================================
+// MANUAL PAYMENT STATUS UPDATE
+// ======================================================
+
 router.patch(
     "/:id/status",
     protect,
-    updatePaymentStatus
-)
+    markPaymentAsPaid
+);
+
+router.post(
+    "/create-order",
+    protect,
+    createPaymentOrder
+);
 
 
 export default router;

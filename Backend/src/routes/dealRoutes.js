@@ -5,6 +5,7 @@ import { protect } from "../middleware/authMiddleware.js";
 import {
     createDeal,
     getFarmerDeals,
+    getBuyerDeals,
     acceptDeal,
     rejectDeal,
 } from "../controllers/dealController.js";
@@ -12,12 +13,36 @@ import {
 const router = express.Router();
 
 
-// Buyer creates an offer
-router.post("/", protect, createDeal);
+// ======================================================
+// BUYER
+// ======================================================
+
+// Buyer creates a deal offer
+router.post(
+    "/",
+    protect,
+    createDeal
+);
 
 
-// Farmer gets all their deals
-router.get("/farmer", protect, getFarmerDeals);
+// Buyer gets all their deals
+router.get(
+    "/buyer",
+    protect,
+    getBuyerDeals
+);
+
+
+// ======================================================
+// FARMER
+// ======================================================
+
+// Farmer gets all received deals
+router.get(
+    "/farmer",
+    protect,
+    getFarmerDeals
+);
 
 
 // Farmer accepts a pending deal
@@ -34,5 +59,6 @@ router.patch(
     protect,
     rejectDeal
 );
+
 
 export default router;

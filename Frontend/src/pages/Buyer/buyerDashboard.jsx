@@ -5,6 +5,8 @@ import {
     TrendingUp,
 } from "lucide-react";
 
+import { Link } from "react-router-dom";
+
 import { useAuth } from "../../context/AuthContext";
 
 import LogoutButton from "../../components/auth/LogoutButton";
@@ -86,6 +88,168 @@ const BuyerDashboard = () => {
                             0
                         </p>
                     </div>
+
+                </div>
+
+                {/* Buyer Actions */}
+                <div className="mt-6 grid gap-5 md:grid-cols-2">
+
+                    <Link
+                        to="/buyer/deals"
+                        className="
+                            group
+                            rounded-3xl
+                            border
+                            border-gray-100
+                            bg-white
+                            p-6
+                            shadow-sm
+                            transition
+                            hover:-translate-y-1
+                            hover:shadow-md
+                        "
+                    >
+
+                        <div
+                            className="
+                                flex
+                                h-11
+                                w-11
+                                items-center
+                                justify-center
+                                rounded-2xl
+                                bg-blue-50
+                            "
+                        >
+
+                            <ShoppingCart
+                                className="
+                                    h-5
+                                    w-5
+                                    text-blue-600
+                                "
+                            />
+
+                        </div>
+
+
+                        <h3
+                            className="
+                                mt-5
+                                text-lg
+                                font-bold
+                                text-gray-900
+                            "
+                        >
+                            My Deals
+                        </h3>
+
+
+                        <p
+                            className="
+                                mt-2
+                                text-sm
+                                leading-6
+                                text-gray-500
+                            "
+                        >
+                            View your negotiations, accepted
+                            deals and complete payments.
+                        </p>
+
+
+                        <p
+                            className="
+                                mt-4
+                                text-sm
+                                font-semibold
+                                text-blue-600
+                                group-hover:text-blue-700
+                            "
+                        >
+                            View my deals →
+                        </p>
+
+                    </Link>
+
+
+                    <Link
+                        to="/buyer/produce"
+                        className="
+                            group
+                            rounded-3xl
+                            border
+                            border-gray-100
+                            bg-white
+                            p-6
+                            shadow-sm
+                            transition
+                            hover:-translate-y-1
+                            hover:shadow-md
+                        "
+                    >
+
+                        <div
+                            className="
+                                flex
+                                h-11
+                                w-11
+                                items-center
+                                justify-center
+                                rounded-2xl
+                                bg-green-50
+                            "
+                        >
+
+                            <Search
+                                className="
+                                    h-5
+                                    w-5
+                                    text-green-600
+                                "
+                            />
+
+                        </div>
+
+
+                        <h3
+                            className="
+                                mt-5
+                                text-lg
+                                font-bold
+                                text-gray-900
+                            "
+                        >
+                            Browse Produce
+                        </h3>
+
+
+                        <p
+                            className="
+                                mt-2
+                                text-sm
+                                leading-6
+                                text-gray-500
+                            "
+                        >
+                            Discover produce listed directly
+                            by farmers.
+                        </p>
+
+
+                        <p
+                            className="
+                                mt-4
+                                text-sm
+                                font-semibold
+                                text-green-600
+                                group-hover:text-green-700
+                            "
+                        >
+                            Browse produce →
+                        </p>
+
+                    </Link>
 
                 </div>
 
