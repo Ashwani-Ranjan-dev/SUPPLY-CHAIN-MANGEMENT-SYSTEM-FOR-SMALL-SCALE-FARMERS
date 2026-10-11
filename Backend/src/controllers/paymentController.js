@@ -555,3 +555,50 @@ export const createPaymentOrder = async (req, res) => {
         });
     }
 };
+
+// Get the Buyer payment Controller
+export const getBuyerPayments = async (req, res) => {
+    try {
+        const buyer = await User.findById(req.user.id);
+
+        if (!buyer) {
+            return res.status(404).json({
+                success: false,
+                message: "Buyer not found.",
+            });
+        }
+
+        if (buyer.role !== "BUYER") {
+            return res.status(403).json({
+                success: false,
+                message: "Only buyers can access payment history.",
+            });
+        }
+
+        const payments = await Payment.find({
+            buyer: buyer._id,
+        })
+            .populate("farmer", "name village")
+            .populate({
+                path: "deal",
+                populate: {
+                    path: "produce",
+                    select: "crop unit",
+                },
+            })
+            .sort({ createdAt: -1 });
+
+        return res.status(200).json({
+            success: true,
+            count: payments.length,
+            payments,
+        });
+    } catch (error) {
+        console.error("Get buyer payments error:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Unable to load buyer payment history.",
+        });
+    }
+};

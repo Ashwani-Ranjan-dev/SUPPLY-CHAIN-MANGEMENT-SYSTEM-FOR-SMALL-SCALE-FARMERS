@@ -20,6 +20,12 @@ import FarmerLedger from "./pages/Farmer/Farmerledger";
 import Notifications from "./pages/Farmer/Notifications"
 import FarmerProfile from "./pages/Farmer/FarmerProfile";
 import BuyerDeals from "./pages/Buyer/BuyerDeal";
+import BuyerLayout from "./layouts/Buyerlayout";
+import BuyerProfile from "./pages/Buyer/Buyerprofile";
+import BuyerMarketplace from "./pages/Buyer/BuyerMarketPlace";
+import BuyerProduceDetails from "./pages/Buyer/BuyerProduceDetail";
+import CreateDeal from "./pages/Buyer/CreateDeal";
+import BuyerPayments from "./pages/Buyer/BuyerPayment";
 
 const App = () => {
     return (
@@ -35,6 +41,7 @@ const App = () => {
                     <Route element={<ProtectedRoute />}>
                         <Route path="/dashboard" element={<DashboardRedirect />} />
 
+                    {/* Farmer Routes */}
                         <Route element={<RoleRoute allowedRoles={["FARMER"]} />}>
                             <Route path="/farmer/dashboard" element={<FarmerDashboard />} />
                             <Route path="/farmer/produce/new" element={<AddProduce />} />
@@ -46,15 +53,20 @@ const App = () => {
                             <Route path="/farmer/payments" element={<FarmerPayments />} />
                             <Route path="/farmer/ledger" element={<FarmerLedger />} />
                             <Route path="/farmer/notifications" element={<Notifications />} />
-                            <Route path="/farmer/profile" element={<FarmerProfile/>}/>
+                            <Route path="/farmer/profile" element={<FarmerProfile />} />
                         </Route>
 
+                        {/* Buyer Routes */}
                         <Route element={<RoleRoute allowedRoles={["BUYER"]} />}>
-                            <Route path="/buyer/dashboard" element={<BuyerDashboard />} />
-                            <Route path="/buyer/deals" element={<BuyerDeals/>}/>
+                            <Route path="/buyer/dashboard" element={<BuyerLayout><BuyerDashboard /></BuyerLayout>}/>
+                            <Route path="/buyer/deals" element={<BuyerLayout><BuyerDeals /></BuyerLayout>}/>
+                            <Route path="/buyer/profile" element={<BuyerLayout><BuyerProfile/></BuyerLayout>}/>
+                            <Route path="/buyer/produce" element={<BuyerLayout><BuyerMarketplace/></BuyerLayout>}/>
+                            <Route path="/buyer/produce/:id" element={<BuyerLayout><BuyerProduceDetails/></BuyerLayout>}/>
+                            <Route path="/buyer/produce/:id/deal" element={<BuyerLayout><CreateDeal/></BuyerLayout>}/>
+                            <Route path="/buyer/payments" element={<BuyerLayout><BuyerPayments/></BuyerLayout>}/>
                         </Route>
-
-
+                        
                     </Route>
                 </Routes>
             </BrowserRouter>

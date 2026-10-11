@@ -7,7 +7,9 @@ import {
     getMyProduce,
     getProduceById,
     updateProduce,
-    deleteProduce
+    deleteProduce,
+    getAllProduce,
+    getMarketplaceProduceById
 } from "../controllers/produceControllers.js";
 
 const router = express.Router();
@@ -41,5 +43,18 @@ router.delete(
     protect,
     deleteProduce
 );
+
+router.get(
+    "/",
+    protect,
+    getAllProduce
+);
+
+router.get(
+    "/market/:id",
+    protect,
+    getMarketplaceProduceById
+);
+
 
 export default router;

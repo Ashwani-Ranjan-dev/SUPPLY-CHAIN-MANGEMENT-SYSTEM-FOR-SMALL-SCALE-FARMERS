@@ -7,27 +7,28 @@ import {
     getPaymentById,
     markPaymentAsPaid,
     createPaymentOrder,
-    verifyPayment
-} from "../controllers/paymentController.js";
+    verifyPayment,
+    getBuyerPayments
+} from "../controllers/paymentController.js";;
+
 
 const router = express.Router();
 
-
-// ======================================================
 // FARMER PAYMENT HISTORY
-// ======================================================
-
 router.get(
     "/farmer",
     protect,
     getFarmerPayments
 );
 
+//BUYER PAYMENT HISTORY
+router.get(
+    "/buyer",
+    protect,
+    getBuyerPayments
+)
 
-// ======================================================
 // VERIFY RAZORPAY PAYMENT
-// ======================================================
-
 router.post(
     "/verify",
     protect,
@@ -35,27 +36,22 @@ router.post(
 );
 
 
-// ======================================================
-// SINGLE PAYMENT
-// ======================================================
 
+// SINGLE PAYMENT
 router.get(
     "/:id",
     protect,
     getPaymentById
 );
 
-
-// ======================================================
 // MANUAL PAYMENT STATUS UPDATE
-// ======================================================
-
 router.patch(
     "/:id/status",
     protect,
     markPaymentAsPaid
 );
 
+// CREATE PAYMENT ROUTE
 router.post(
     "/create-order",
     protect,

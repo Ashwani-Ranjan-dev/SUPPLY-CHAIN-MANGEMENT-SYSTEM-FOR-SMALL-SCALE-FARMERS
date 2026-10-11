@@ -434,3 +434,73 @@ export const deleteProduce = async (
         });
     }
 };
+
+// Controller to get all active listing produce
+// Controller to get all active produce listings
+export const getAllProduce = async (req, res) => {
+    try {
+        const produce = await Produce.find({
+            status: "ACTIVE",
+        })
+            .populate("farmer", "name village phone")
+            .sort({ createdAt: -1 });
+
+        return res.status(200).json({
+            success: true,
+            count: produce.length,
+            produce,
+        });
+    } catch (error) {
+        console.error("Get all produce error:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Unable to load produce listings.",
+        });
+    }
+};
+
+// Buyer can access their marketplace produce
+export const getMarketplaceProduceById = async (req, res) => {
+    try {
+        const buyer = await User.findById(req.user.id);
+
+        if (!buyer) {
+            return res.status(404).json({
+                success: false,
+                message: "Buyer not found.",
+            });
+        }
+
+        if (buyer.role !== "BUYER") {
+            return res.status(403).json({
+                success: false,
+                message: "Only buyers can view marketplace produce details.",
+            });
+        }
+
+        const produce = await Produce.findOne({
+            _id: req.params.id,
+            status: "ACTIVE",
+        }).populate("farmer", "name village phone");
+
+        if (!produce) {
+            return res.status(404).json({
+                success: false,
+                message: "Active produce listing not found.",
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            produce,
+        });
+    } catch (error) {
+        console.error("Get marketplace produce details error:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Unable to load produce details.",
+        });
+    }
+};

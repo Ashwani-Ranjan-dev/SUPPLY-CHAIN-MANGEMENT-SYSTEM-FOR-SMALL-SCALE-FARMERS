@@ -12,6 +12,7 @@ import PaymentRoutes from "./routes/paymentRoutes.js";
 import DeliveryRoutes from "./routes/deliveryRoutes.js";
 import ledgerRoutes from "./routes/ledgerroutes.js";
 import notificationRoutes from "./routes/notificationroutes.js";
+import buyerRoutes from "./routes/buyerRoutes.js";
 
 const app = express();
 
@@ -57,4 +58,5 @@ app.use("/api/ledger" , ledgerRoutes);
 
 app.use("/api/notifications", notificationRoutes);
 
+app.use("/api/buyer" , buyerRoutes);
 export default app;
