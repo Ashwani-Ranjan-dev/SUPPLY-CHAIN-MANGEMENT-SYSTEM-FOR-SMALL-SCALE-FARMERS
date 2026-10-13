@@ -176,3 +176,4 @@ export const getBuyerPayments = async(req , res)=>{
 
     return data;
 }
+

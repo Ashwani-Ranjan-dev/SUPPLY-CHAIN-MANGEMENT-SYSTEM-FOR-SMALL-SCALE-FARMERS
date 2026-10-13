@@ -26,6 +26,8 @@ import BuyerMarketplace from "./pages/Buyer/BuyerMarketPlace";
 import BuyerProduceDetails from "./pages/Buyer/BuyerProduceDetail";
 import CreateDeal from "./pages/Buyer/CreateDeal";
 import BuyerPayments from "./pages/Buyer/BuyerPayment";
+import BuyerDeliveries from "./pages/Buyer/BuyerDeliveries";
+import BuyerNotifications from "./pages/Buyer/BuyerNotifications";
 
 const App = () => {
     return (
@@ -65,8 +67,10 @@ const App = () => {
                             <Route path="/buyer/produce/:id" element={<BuyerLayout><BuyerProduceDetails/></BuyerLayout>}/>
                             <Route path="/buyer/produce/:id/deal" element={<BuyerLayout><CreateDeal/></BuyerLayout>}/>
                             <Route path="/buyer/payments" element={<BuyerLayout><BuyerPayments/></BuyerLayout>}/>
+                            <Route path="/buyer/deliveries" element={<BuyerLayout><BuyerDeliveries/></BuyerLayout>}/>
+                            <Route path="/buyer/notifications" element={<BuyerLayout><BuyerNotifications/></BuyerLayout>}/>
                         </Route>
-                        
+
                     </Route>
                 </Routes>
             </BrowserRouter>

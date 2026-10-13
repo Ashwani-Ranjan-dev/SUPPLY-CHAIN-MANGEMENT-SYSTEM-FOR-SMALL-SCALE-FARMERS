@@ -82,3 +82,28 @@ export const updateDeliveryStatus =
 
         return data;
     };
+
+// Get Buyer Deliveries
+export const getBuyerDeliveries = async(req , res)=>{
+    const response = await fetch(
+        `${API_URL}/deliveries/buyer`,
+        {
+            method : "GET",
+            credentials : "include",
+            headers : {
+                "Content-Type" : "application/json"
+            },
+        }
+    );
+
+    const data = await  response.json();
+
+    if(!response.ok){
+        throw new Error(
+            data.message ||
+            "Unable to load buyer deliveries"
+        )
+    };
+
+    return data;
+}

@@ -174,3 +174,47 @@ export const markAllNotificationsAsRead = async (
         });
     }
 };
+
+
+// Get notification for the logged in buyer
+export const getBuyerNotifications = async(req , res)=>{
+    try{
+
+        const buyer = await User.findById(req.user.id);
+
+        if(!buyer){
+            return res.status(404).json({
+                success : false,
+                message : "Buyer not found"
+            });
+        }
+
+        if(buyer.role !== "BUYER"){
+            return res.status(403).json({
+                success : false,
+                message : "Only Buyer can access notifications."
+            });
+        }
+
+        
+        const notifications = await Notification.find({
+            recipient: buyer._id,
+        }).sort({
+            createdAt: -1,
+        });
+
+        return res.status(200).json({
+            success : true,
+            count: notifications.length,
+            notifications
+        });
+    }
+    catch(error){
+        console.error("Get Buyer notifications error: " , error);
+
+        return res.status(500).json({
+            success : false,
+            message : "Unable to fetch Buyer notification"
+        });
+    }
+}

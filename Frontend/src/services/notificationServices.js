@@ -101,3 +101,25 @@ export const markAllNotificationsAsRead = async () => {
 
     return data;
 };
+
+// Get all Buyer Notification
+export const getBuyerNotifications = async()=>{
+    const response = await fetch(
+        `${API_URL}/notifications/buyer`,
+        {
+            method : "GET",
+            credentials : "include"
+        }
+    );
+
+    const data = await response.json();
+
+    if(!response.ok){
+        throw new Error(
+            data.message ||
+            "Unable to get the Buyer Notification"
+        );
+    }
+
+    return data;
+}

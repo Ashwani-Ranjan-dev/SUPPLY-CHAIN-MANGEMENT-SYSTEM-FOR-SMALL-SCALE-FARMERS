@@ -4,9 +4,8 @@ import createNotification from "../utils/createNotification.js";
 import Deal from "../models/DealSchema.js";
 
 
-// ======================================================
+
 // GET FARMER DELIVERIES
-// ======================================================
 
 export const getFarmerDeliveries = async (
     req,
@@ -76,9 +75,7 @@ export const getFarmerDeliveries = async (
 };
 
 
-// ======================================================
 // GET SINGLE DELIVERY
-// ======================================================
 
 export const getDeliveryById = async (
     req,
@@ -153,9 +150,8 @@ export const getDeliveryById = async (
 };
 
 
-// ======================================================
+
 // UPDATE DELIVERY STATUS
-// ======================================================
 
 export const updateDeliveryStatus = async (
     req,
@@ -163,9 +159,7 @@ export const updateDeliveryStatus = async (
 ) => {
     try {
 
-        // ==================================================
         // 1. GET REQUESTED STATUS
-        // ==================================================
 
         const { status } = req.body;
 
@@ -178,9 +172,8 @@ export const updateDeliveryStatus = async (
         }
 
 
-        // ==================================================
         // 2. FIND FARMER
-        // ==================================================
+
 
         const farmer = await User.findById(
             req.user.id
@@ -194,9 +187,9 @@ export const updateDeliveryStatus = async (
         }
 
 
-        // ==================================================
+        
         // 3. ROLE CHECK
-        // ==================================================
+     
 
         if (farmer.role !== "FARMER") {
             return res.status(403).json({
@@ -206,10 +199,7 @@ export const updateDeliveryStatus = async (
             });
         }
 
-
-        // ==================================================
         // 4. FIND DELIVERY
-        // ==================================================
 
         const delivery =
             await Delivery.findOne({
@@ -226,9 +216,7 @@ export const updateDeliveryStatus = async (
         }
 
 
-        // ==================================================
         // 5. ALLOWED STATUS TRANSITIONS
-        // ==================================================
 
         const allowedTransitions = {
 
@@ -260,9 +248,7 @@ export const updateDeliveryStatus = async (
             ] || [];
 
 
-        // ==================================================
         // 6. CHECK STATUS TRANSITION
-        // ==================================================
 
         if (
             !nextStatuses.includes(status)
@@ -275,10 +261,7 @@ export const updateDeliveryStatus = async (
         }
 
 
-        // ==================================================
         // 7. PAYMENT CHECK
-        // ==================================================
-
         if (
             delivery.paymentStatus !== "PAID"
         ) {
@@ -289,11 +272,7 @@ export const updateDeliveryStatus = async (
             });
         }
 
-
-        // ==================================================
         // 8. UPDATE DELIVERY STATUS
-        // ==================================================
-
         delivery.status = status;
 
 
@@ -334,9 +313,7 @@ export const updateDeliveryStatus = async (
 
 
 
-        // ==================================================
         // 9. FORMAT STATUS FOR NOTIFICATION
-        // ==================================================
 
         const formattedStatus =
             delivery.status.replace(
@@ -344,10 +321,7 @@ export const updateDeliveryStatus = async (
                 " "
             );
 
-
-        // ==================================================
         // 10. NOTIFY BUYER
-        // ==================================================
 
         await createNotification({
             recipient: delivery.buyer,
@@ -364,10 +338,7 @@ export const updateDeliveryStatus = async (
             entityId: delivery._id,
         });
 
-
-        // ==================================================
-        // 11. NOTIFY FARMER
-        // ==================================================
+        //NOTIFY FARMER
 
         await createNotification({
             recipient: delivery.farmer,
@@ -384,10 +355,7 @@ export const updateDeliveryStatus = async (
             entityId: delivery._id,
         });
 
-
-        // ==================================================
         // 12. SUCCESS RESPONSE
-        // ==================================================
 
         return res.status(200).json({
             success: true,
@@ -409,6 +377,54 @@ export const updateDeliveryStatus = async (
             success: false,
             message:
                 "Unable to update delivery status.",
+        });
+    }
+};
+
+
+ // GET BUYER DELIVERIES
+
+export const getBuyerDeliveries = async (req, res) => {
+    try {
+        // 1. Find the logged-in user
+        const buyer = await User.findById(req.user.id);
+
+        if (!buyer) {
+            return res.status(404).json({
+                success: false,
+                message: "Buyer not found.",
+            });
+        }
+
+        // 2. Allow only buyers
+        if (buyer.role !== "BUYER") {
+            return res.status(403).json({
+                success: false,
+                message: "Only buyers can access their deliveries.",
+            });
+        }
+
+        // 3. Fetch only this buyer's deliveries
+        const deliveries = await Delivery.find({
+            buyer: buyer._id,
+        })
+            .populate("farmer", "name phone village")
+            .populate("produce", "crop quantity unit location")
+            .populate("deal", "offeredPrice totalAmount status")
+            .sort({ createdAt: -1 });
+
+        // 4. Return the delivery records
+        return res.status(200).json({
+            success: true,
+            count: deliveries.length,
+            deliveries,
+        });
+    } catch (error) {
+        console.error("Get buyer deliveries error:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Unable to load buyer deliveries.",
         });
     }
 };

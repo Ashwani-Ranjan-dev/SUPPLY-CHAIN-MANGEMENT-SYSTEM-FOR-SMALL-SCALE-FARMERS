@@ -7,6 +7,7 @@ import {
     getUnreadNotificationCount,
     markNotificationAsRead,
     markAllNotificationsAsRead,
+    getBuyerNotifications,
 } from "../controllers/notificationController.js";
 
 const router = express.Router();
@@ -17,6 +18,13 @@ router.get(
     "/farmer",
     protect,
     getFarmerNotifications
+);
+
+// Get Buyer notifications
+router.get(
+    "/buyer",
+    protect,
+    getBuyerNotifications
 );
 
 
