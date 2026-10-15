@@ -173,6 +173,7 @@ import {
     Sprout,
     ArrowUpRight,
     ChevronRight,
+    Package,
 } from "lucide-react";
 
 import { NavLink } from "react-router-dom";
@@ -213,6 +214,11 @@ const BuyerSidebar = ({ isOpen, onClose }) => {
             name: "Profile",
             path: "/buyer/profile",
             icon: UserCircle,
+        },
+        {
+            name: "Pooled Produce",
+            path: "/buyer/pooled-lots",
+            icon: Package,
         },
     ];
 
@@ -348,10 +354,9 @@ const BuyerSidebar = ({ isOpen, onClose }) => {
                 className={`
                     fixed inset-0 z-40 bg-gray-950/45 backdrop-blur-[3px]
                     transition-opacity duration-300 lg:hidden
-                    ${
-                        isOpen
-                            ? "pointer-events-auto opacity-100"
-                            : "pointer-events-none opacity-0"
+                    ${isOpen
+                        ? "pointer-events-auto opacity-100"
+                        : "pointer-events-none opacity-0"
                     }
                 `}
                 onClick={onClose}
@@ -370,10 +375,9 @@ const BuyerSidebar = ({ isOpen, onClose }) => {
                     bg-white shadow-[8px_0_35px_rgba(20,83,45,0.06)]
                     transition-transform duration-300 ease-in-out
                     lg:translate-x-0
-                    ${
-                        isOpen
-                            ? "translate-x-0"
-                            : "-translate-x-full"
+                    ${isOpen
+                        ? "translate-x-0"
+                        : "-translate-x-full"
                     }
                 `}
             >
@@ -460,10 +464,9 @@ const BuyerSidebar = ({ isOpen, onClose }) => {
                                     focus-visible:ring-2
                                     focus-visible:ring-inset
                                     focus-visible:ring-green-500
-                                    ${
-                                        isActive
-                                            ? "text-green-800"
-                                            : "text-gray-500 hover:text-gray-900"
+                                    ${isActive
+                                        ? "text-green-800"
+                                        : "text-gray-500 hover:text-gray-900"
                                     }
                                 `}
                             >

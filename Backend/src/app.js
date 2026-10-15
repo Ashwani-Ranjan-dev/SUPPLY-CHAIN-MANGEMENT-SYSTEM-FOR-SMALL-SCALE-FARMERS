@@ -13,6 +13,7 @@ import DeliveryRoutes from "./routes/deliveryRoutes.js";
 import ledgerRoutes from "./routes/ledgerroutes.js";
 import notificationRoutes from "./routes/notificationroutes.js";
 import buyerRoutes from "./routes/buyerRoutes.js";
+import PoolingRoutes from "./routes/PoolingRoutes.js";
 
 const app = express();
 
@@ -59,4 +60,7 @@ app.use("/api/ledger" , ledgerRoutes);
 app.use("/api/notifications", notificationRoutes);
 
 app.use("/api/buyer" , buyerRoutes);
+
+app.use("/api/pooling" , PoolingRoutes);
+
 export default app;

@@ -68,6 +68,13 @@ const produceSchema = new mongoose.Schema(
             ],
             default: "ACTIVE",
         },
+        pooledLot: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "PooledLot",
+            default: null,
+            index: true,
+        },
+
     },
     {
         timestamps: true,
