@@ -28,6 +28,11 @@ const pooledDealContributionSchema = new mongoose.Schema(
             required: true,
             min: 0,
         },
+        responseStatus: {
+            type: String,
+            enum: ["PENDING", "ACCEPTED", "REJECTED"],
+            default: "PENDING",
+        },
     },
     { _id: false }
 );

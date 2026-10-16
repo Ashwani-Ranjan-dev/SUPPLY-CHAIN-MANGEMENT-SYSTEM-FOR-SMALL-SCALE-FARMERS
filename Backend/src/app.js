@@ -14,6 +14,8 @@ import ledgerRoutes from "./routes/ledgerroutes.js";
 import notificationRoutes from "./routes/notificationroutes.js";
 import buyerRoutes from "./routes/buyerRoutes.js";
 import PoolingRoutes from "./routes/PoolingRoutes.js";
+import pooledDealRoutes from "./routes/PooledDealRoutes.js";
+
 
 const app = express();
 
@@ -62,5 +64,8 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api/buyer" , buyerRoutes);
 
 app.use("/api/pooling" , PoolingRoutes);
+
+app.use("/api/pooled-deals", pooledDealRoutes);
+
 
 export default app;
