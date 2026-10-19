@@ -29,6 +29,8 @@ import BuyerPayments from "./pages/Buyer/BuyerPayment";
 import BuyerDeliveries from "./pages/Buyer/BuyerDeliveries";
 import BuyerNotifications from "./pages/Buyer/BuyerNotifications";
 import BuyerPooledLots from "./pages/Buyer/BuyerPooledLots";
+import BuyerPooledDeals from "./pages/Buyer/BuyerPooledDeals";
+import FarmerPooledDeals from "./pages/Farmer/FarmerPooledDeals";
 
 const App = () => {
     return (
@@ -57,6 +59,7 @@ const App = () => {
                             <Route path="/farmer/ledger" element={<FarmerLedger />} />
                             <Route path="/farmer/notifications" element={<Notifications />} />
                             <Route path="/farmer/profile" element={<FarmerProfile />} />
+                            <Route path="/farmer/pooled-deals" element={<FarmerPooledDeals/>} />
                         </Route>
 
                         {/* Buyer Routes */}
@@ -71,6 +74,7 @@ const App = () => {
                             <Route path="/buyer/deliveries" element={<BuyerLayout><BuyerDeliveries/></BuyerLayout>}/>
                             <Route path="/buyer/notifications" element={<BuyerLayout><BuyerNotifications/></BuyerLayout>}/>
                             <Route path="/buyer/pooled-lots" element={<BuyerLayout><BuyerPooledLots/></BuyerLayout>}/>
+                            <Route path="/buyer/pooled-deals" element={<BuyerLayout><BuyerPooledDeals/></BuyerLayout>}/>
                         </Route>
 
                     </Route>

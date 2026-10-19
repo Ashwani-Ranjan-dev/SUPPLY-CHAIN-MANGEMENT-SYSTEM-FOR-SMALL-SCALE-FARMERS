@@ -9,7 +9,7 @@ import {
     LogOut,
     X,
     CreditCard,
-    UserCircle
+    UserCircle,
 } from "lucide-react";
 
 import { useAuth } from "../../context/AuthContext";
@@ -62,6 +62,10 @@ const FarmerSidebar = ({
         {
             label: "Notifications",
             icon: Bell,
+        },
+        {
+            label : "My Pooled Deals",
+            icon : Handshake,
         },
         {
             label: "My Profile",
@@ -196,6 +200,9 @@ const FarmerSidebar = ({
                                     }
                                     if(item.label === "My Profile"){
                                         navigate("/farmer/profile")
+                                    }
+                                    if(item.label === "My Pooled Deals"){
+                                        navigate("/farmer/pooled-deals")
                                     }
                                     setMobileOpen(false);
                                 }}

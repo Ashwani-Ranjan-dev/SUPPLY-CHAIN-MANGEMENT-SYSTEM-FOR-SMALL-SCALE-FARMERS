@@ -174,6 +174,7 @@ import {
     ArrowUpRight,
     ChevronRight,
     Package,
+    Handshake
 } from "lucide-react";
 
 import { NavLink } from "react-router-dom";
@@ -211,14 +212,19 @@ const BuyerSidebar = ({ isOpen, onClose }) => {
             icon: Bell,
         },
         {
-            name: "Profile",
-            path: "/buyer/profile",
-            icon: UserCircle,
-        },
-        {
             name: "Pooled Produce",
             path: "/buyer/pooled-lots",
             icon: Package,
+        },
+        {
+            name : "My Pooled Deals",
+            path : "/buyer/pooled-deals",
+            icon : Handshake,
+        },
+         {
+            name: "Profile",
+            path: "/buyer/profile",
+            icon: UserCircle,
         },
     ];
 

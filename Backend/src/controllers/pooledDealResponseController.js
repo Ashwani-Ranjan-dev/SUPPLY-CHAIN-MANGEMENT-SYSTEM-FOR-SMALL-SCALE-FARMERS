@@ -87,17 +87,26 @@ export const respondToPooledDeal = async (req, res) => {
             );
 
             if (allAccepted) {
-                pooledDeal.status = "ACCEPTED";
-
-                await PooledLot.findOneAndUpdate(
+                const committedLot = await PooledLot.findOneAndUpdate(
                     {
                         _id: pooledDeal.pooledLot,
                         status: "OPEN",
                     },
                     {
                         $set: { status: "COMMITTED" },
-                    }
+                    },
+                    { new: true }
                 );
+
+                if (!committedLot) {
+                    return res.status(409).json({
+                        success: false,
+                        message:
+                            "This pooled lot is no longer available. The offer cannot be finalized.",
+                    });
+                }
+
+                pooledDeal.status = "ACCEPTED";
             }
         }
 
@@ -141,6 +150,59 @@ export const respondToPooledDeal = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: "Unable to process farmer response.",
+        });
+    }
+};
+
+
+export const getFarmerPooledDeals = async (req, res) => {
+    try {
+        if (req.user.role !== "FARMER") {
+            return res.status(403).json({
+                success: false,
+                message: "Only farmers can view their pooled deals.",
+            });
+        }
+
+        const pooledDeals = await PooledDeal.find({
+            "contributions.farmer": req.user._id,
+        })
+            .populate("buyer", "name village")
+            .populate("pooledLot", "crop unit location quality status")
+            .sort({ createdAt: -1 });
+
+        const farmerDeals = pooledDeals.map((deal) => {
+            const contribution = deal.contributions.find(
+                (item) =>
+                    item.farmer.toString() === req.user._id.toString()
+            );
+
+            return {
+                ...deal.toObject(),
+                myContribution: contribution
+                    ? {
+                          produce: contribution.produce,
+                          quantity: contribution.quantity,
+                          expectedPrice: contribution.expectedPrice,
+                          offeredAmount: contribution.offeredAmount,
+                          responseStatus:
+                              contribution.responseStatus || "PENDING",
+                      }
+                    : null,
+            };
+        });
+
+        return res.status(200).json({
+            success: true,
+            count: farmerDeals.length,
+            data: farmerDeals,
+        });
+    } catch (error) {
+        console.error("Get farmer pooled deals error:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Unable to retrieve farmer pooled deals.",
         });
     }
 };

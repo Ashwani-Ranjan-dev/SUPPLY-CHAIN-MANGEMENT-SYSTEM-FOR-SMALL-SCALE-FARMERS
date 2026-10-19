@@ -193,3 +193,48 @@ export const createPooledDeal = async (req, res) => {
         });
     }
 };
+
+
+// @desc    Get all pooled deals for the logged-in buyer
+// @route   GET /api/pooled-deals/buyer
+// @access  Private - BUYER
+export const getBuyerPooledDeals = async (req, res) => {
+    try {
+        if (req.user.role !== "BUYER") {
+            return res.status(403).json({
+                success: false,
+                message: "Only buyers can view their pooled deals.",
+            });
+        }
+
+        const pooledDeals = await PooledDeal.find({
+            buyer: req.user._id,
+        })
+            .populate({
+                path: "pooledLot",
+                select: "crop unit location quality totalQuantity status",
+            })
+            .populate({
+                path: "contributions.farmer",
+                select: "name village phone",
+            })
+            .populate({
+                path: "contributions.produce",
+                select: "crop quantity unit expectedPrice status",
+            })
+            .sort({ createdAt: -1 });
+
+        return res.status(200).json({
+            success: true,
+            count: pooledDeals.length,
+            data: pooledDeals,
+        });
+    } catch (error) {
+        console.error("Get buyer pooled deals error:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Unable to retrieve pooled deals.",
+        });
+    }
+};
