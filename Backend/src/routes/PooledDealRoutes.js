@@ -16,6 +16,6 @@ router.get("/buyer", protect , getBuyerPooledDeals);
 router.get("/farmer" , protect , getFarmerPooledDeals);
 
 // Farmer Accept or Reject their contribution for the Offer
-router.post("/:id/respond" , protect , respondToPooledDeal);
+router.patch("/:id/respond" , protect , respondToPooledDeal);
 
 export default router;

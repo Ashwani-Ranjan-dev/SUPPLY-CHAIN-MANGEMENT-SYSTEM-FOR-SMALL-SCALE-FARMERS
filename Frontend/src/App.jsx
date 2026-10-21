@@ -31,6 +31,7 @@ import BuyerNotifications from "./pages/Buyer/BuyerNotifications";
 import BuyerPooledLots from "./pages/Buyer/BuyerPooledLots";
 import BuyerPooledDeals from "./pages/Buyer/BuyerPooledDeals";
 import FarmerPooledDeals from "./pages/Farmer/FarmerPooledDeals";
+import Landing from "./pages/LandingPage";
 
 const App = () => {
     return (
@@ -38,6 +39,7 @@ const App = () => {
             <BrowserRouter>
                 <Routes>
                     {/* Public */}
+                    <Route path="/" element={<Landing />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
                     <Route path="/unauthorized" element={<Unauthorized />} />

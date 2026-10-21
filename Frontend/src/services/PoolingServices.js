@@ -28,3 +28,26 @@ export const getOpenPooledLots = async () => {
 export const getPooledLotById = async (id) => {
     return request(`/pooling/${id}`);
 };
+
+
+export const generatePooledLots = async (windowDays = 3) => {
+    const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/pooling/generate`,
+        {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ windowDays }),
+        }
+    );
+
+    const result = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+        throw new Error(result.message || "Unable to generate pooled lots.");
+    }
+
+    return result;
+};

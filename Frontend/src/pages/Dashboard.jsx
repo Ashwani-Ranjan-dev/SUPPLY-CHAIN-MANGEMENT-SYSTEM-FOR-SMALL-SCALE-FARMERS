@@ -1,6 +1,6 @@
-import {
-    useAuth,
-} from "../context/Authcontext";
+
+import { useAuth } from "Frontend/src/context/Authcontext.jsx";
+
 
 const Dashboard = () => {
     const { user } =
