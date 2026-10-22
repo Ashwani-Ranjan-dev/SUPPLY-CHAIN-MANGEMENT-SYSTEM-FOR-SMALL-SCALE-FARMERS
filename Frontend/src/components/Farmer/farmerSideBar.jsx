@@ -344,6 +344,11 @@ const FarmerSidebar = ({ mobileOpen, setMobileOpen }) => {
             icon: UserCircle,
             section: "ACCOUNT",
         },
+        {
+            label: "Pooled Deliveries",
+            path: "/farmer/pooled-deliveries",
+            icon: Truck,
+        }
     ];
 
     const handleLogout = async () => {
@@ -392,10 +397,9 @@ const FarmerSidebar = ({ mobileOpen, setMobileOpen }) => {
                     backdrop-blur-[2px]
                     transition-opacity duration-300
                     lg:hidden
-                    ${
-                        mobileOpen
-                            ? "visible opacity-100"
-                            : "invisible opacity-0"
+                    ${mobileOpen
+                        ? "visible opacity-100"
+                        : "invisible opacity-0"
                     }
                 `}
                 aria-hidden="true"
@@ -414,10 +418,9 @@ const FarmerSidebar = ({ mobileOpen, setMobileOpen }) => {
                     lg:sticky lg:top-0 lg:z-30
                     lg:h-screen lg:translate-x-0
                     lg:shadow-none
-                    ${
-                        mobileOpen
-                            ? "translate-x-0"
-                            : "-translate-x-full"
+                    ${mobileOpen
+                        ? "translate-x-0"
+                        : "-translate-x-full"
                     }
                 `}
             >
@@ -511,10 +514,9 @@ const FarmerSidebar = ({ mobileOpen, setMobileOpen }) => {
                                                     text-left text-[13px]
                                                     font-semibold
                                                     transition-all duration-200
-                                                    ${
-                                                        active
-                                                            ? "bg-emerald-50 text-emerald-800 shadow-sm shadow-emerald-900/[0.03]"
-                                                            : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                                                    ${active
+                                                        ? "bg-emerald-50 text-emerald-800 shadow-sm shadow-emerald-900/[0.03]"
+                                                        : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                                                     }
                                                 `}
                                             >
@@ -527,10 +529,9 @@ const FarmerSidebar = ({ mobileOpen, setMobileOpen }) => {
                                                         flex h-9 w-9 shrink-0
                                                         items-center justify-center
                                                         rounded-xl transition-all duration-200
-                                                        ${
-                                                            active
-                                                                ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/20"
-                                                                : "bg-slate-100/80 text-slate-500 group-hover:bg-emerald-50 group-hover:text-emerald-700"
+                                                        ${active
+                                                            ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/20"
+                                                            : "bg-slate-100/80 text-slate-500 group-hover:bg-emerald-50 group-hover:text-emerald-700"
                                                         }
                                                     `}
                                                 >
@@ -545,10 +546,9 @@ const FarmerSidebar = ({ mobileOpen, setMobileOpen }) => {
                                                     size={15}
                                                     className={`
                                                         shrink-0 transition-all duration-200
-                                                        ${
-                                                            active
-                                                                ? "translate-x-0 text-emerald-600 opacity-100"
-                                                                : "-translate-x-1 text-slate-400 opacity-0 group-hover:translate-x-0 group-hover:opacity-100"
+                                                        ${active
+                                                            ? "translate-x-0 text-emerald-600 opacity-100"
+                                                            : "-translate-x-1 text-slate-400 opacity-0 group-hover:translate-x-0 group-hover:opacity-100"
                                                         }
                                                     `}
                                                 />

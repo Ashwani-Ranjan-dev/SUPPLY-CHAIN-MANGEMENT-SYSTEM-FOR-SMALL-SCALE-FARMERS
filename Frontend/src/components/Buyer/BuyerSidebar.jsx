@@ -217,15 +217,20 @@ const BuyerSidebar = ({ isOpen, onClose }) => {
             icon: Package,
         },
         {
-            name : "My Pooled Deals",
-            path : "/buyer/pooled-deals",
-            icon : Handshake,
+            name: "My Pooled Deals",
+            path: "/buyer/pooled-deals",
+            icon: Handshake,
         },
-         {
+        {
             name: "Profile",
             path: "/buyer/profile",
             icon: UserCircle,
         },
+        {
+            name: "Pooled Deliveries",
+            path: "/buyer/pooled-deliveries",
+            icon: Truck,
+        }
     ];
 
     return (
