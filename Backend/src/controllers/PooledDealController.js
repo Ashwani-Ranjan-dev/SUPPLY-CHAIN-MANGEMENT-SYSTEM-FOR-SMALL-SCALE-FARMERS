@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import PooledDeal from "../models/PooledDealSchema.js";
 import PooledLot from "../models/PooledLotSchema.js";
 import createNotification from "../utils/createNotification.js";
+import PooledPayment from "../models/PooledPaymentSchema.js";
 
 // @desc    Submit an offer for a pooled produce lot
 // @route   POST /api/pooled-deals
@@ -198,6 +199,7 @@ export const createPooledDeal = async (req, res) => {
 // @desc    Get all pooled deals for the logged-in buyer
 // @route   GET /api/pooled-deals/buyer
 // @access  Private - BUYER
+
 export const getBuyerPooledDeals = async (req, res) => {
     try {
         if (req.user.role !== "BUYER") {
@@ -207,6 +209,7 @@ export const getBuyerPooledDeals = async (req, res) => {
             });
         }
 
+        // 1. Fetch only the logged-in buyer's deals.
         const pooledDeals = await PooledDeal.find({
             buyer: req.user._id,
         })
@@ -222,12 +225,56 @@ export const getBuyerPooledDeals = async (req, res) => {
                 path: "contributions.produce",
                 select: "crop quantity unit expectedPrice status",
             })
-            .sort({ createdAt: -1 });
+            .sort({ createdAt: -1 })
+            .lean();
+
+        // 2. Fetch payment records for these deals in one query.
+        const dealIds = pooledDeals.map((deal) => deal._id);
+
+        const payments = dealIds.length
+            ? await PooledPayment.find({
+                  pooledDeal: { $in: dealIds },
+                  buyer: req.user._id,
+              })
+                  .select(
+                      "pooledDeal amount currency status transactionId razorpayPaymentId paidAt createdAt"
+                  )
+                  .lean()
+            : [];
+
+        // 3. Index payments by their associated pooled deal.
+        const paymentByDealId = new Map(
+            payments.map((payment) => [
+                payment.pooledDeal.toString(),
+                payment,
+            ])
+        );
+
+        // 4. Attach persistent payment information to every deal.
+        const dealsWithPayments = pooledDeals.map((deal) => {
+            const payment = paymentByDealId.get(deal._id.toString());
+
+            return {
+                ...deal,
+                payment: payment
+                    ? {
+                          _id: payment._id,
+                          amount: payment.amount,
+                          currency: payment.currency,
+                          status: payment.status,
+                          transactionId: payment.transactionId,
+                          razorpayPaymentId: payment.razorpayPaymentId,
+                          paidAt: payment.paidAt,
+                          createdAt: payment.createdAt,
+                      }
+                    : null,
+            };
+        });
 
         return res.status(200).json({
             success: true,
-            count: pooledDeals.length,
-            data: pooledDeals,
+            count: dealsWithPayments.length,
+            data: dealsWithPayments,
         });
     } catch (error) {
         console.error("Get buyer pooled deals error:", error);
@@ -238,3 +285,5 @@ export const getBuyerPooledDeals = async (req, res) => {
         });
     }
 };
+
+

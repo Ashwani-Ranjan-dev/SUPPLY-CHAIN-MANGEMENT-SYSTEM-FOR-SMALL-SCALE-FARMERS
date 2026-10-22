@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import PooledDeal from "../models/PooledDealSchema.js";
 import createNotification from "../utils/createNotification.js";
 import PooledLot from "../models/PooledLotSchema.js";
+import PooledPayment from "../models/PooledPaymentSchema.js";
 
 // @desc    Respond to a pooled deal contribution
 // @route   PATCH /api/pooled-deals/:id/respond
@@ -185,10 +186,9 @@ export const respondToPooledDeal = async (req, res) => {
 };
 
 
-
 export const getFarmerPooledDeals = async (req, res) => {
     try {
-        if (req.user.role !== "FARMER") {
+        if (req.user?.role !== "FARMER") {
             return res.status(403).json({
                 success: false,
                 message: "Only farmers can view their pooled deals.",
@@ -200,25 +200,65 @@ export const getFarmerPooledDeals = async (req, res) => {
         })
             .populate("buyer", "name village")
             .populate("pooledLot", "crop unit location quality status")
-            .sort({ createdAt: -1 });
+            .sort({ createdAt: -1 })
+            .lean();
+
+        // Collect the IDs of deals involving this farmer.
+        const dealIds = pooledDeals.map((deal) => deal._id);
+
+        // Fetch persisted payment records for these deals.
+        const payments = dealIds.length
+            ? await PooledPayment.find({
+                  pooledDeal: { $in: dealIds },
+              })
+                  .select(
+                      "pooledDeal amount currency status transactionId paidAt createdAt"
+                  )
+                  .lean()
+            : [];
+
+        // Match each payment to its pooled deal.
+        const paymentByDealId = new Map(
+            payments.map((payment) => [
+                payment.pooledDeal.toString(),
+                payment,
+            ])
+        );
 
         const farmerDeals = pooledDeals.map((deal) => {
             const contribution = deal.contributions.find(
                 (item) =>
-                    item.farmer.toString() === req.user._id.toString()
+                    item.farmer.toString() ===
+                    req.user._id.toString()
+            );
+
+            const payment = paymentByDealId.get(
+                deal._id.toString()
             );
 
             return {
-                ...deal.toObject(),
+                ...deal,
+
                 myContribution: contribution
                     ? {
-                        produce: contribution.produce,
-                        quantity: contribution.quantity,
-                        expectedPrice: contribution.expectedPrice,
-                        offeredAmount: contribution.offeredAmount,
-                        responseStatus:
-                            contribution.responseStatus || "PENDING",
-                    }
+                          produce: contribution.produce,
+                          quantity: contribution.quantity,
+                          expectedPrice: contribution.expectedPrice,
+                          offeredAmount: contribution.offeredAmount,
+                          responseStatus:
+                              contribution.responseStatus || "PENDING",
+                      }
+                    : null,
+
+                payment: payment
+                    ? {
+                          amount: payment.amount,
+                          currency: payment.currency,
+                          status: payment.status,
+                          transactionId: payment.transactionId,
+                          paidAt: payment.paidAt,
+                          createdAt: payment.createdAt,
+                      }
                     : null,
             };
         });
@@ -229,7 +269,10 @@ export const getFarmerPooledDeals = async (req, res) => {
             data: farmerDeals,
         });
     } catch (error) {
-        console.error("Get farmer pooled deals error:", error);
+        console.error(
+            "Get farmer pooled deals error:",
+            error
+        );
 
         return res.status(500).json({
             success: false,
