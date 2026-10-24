@@ -180,7 +180,7 @@ export const createPooledDelivery = async (req, res) => {
                 title: "Pooled delivery created",
                 message:
                     `A paid pooled order for ${pooledDeal.quantity} ${pooledDeal.unit} of ${pooledLot.crop} is ready for delivery tracking.`,
-                entityType: "SYSTEM",
+                entityType: "DELIVERY",
                 entityId: delivery._id,
             })
         );
@@ -519,7 +519,7 @@ export const updatePooledDeliveryStatus = async (req, res) => {
                 type: "DELIVERY_UPDATED",
                 title: "Pooled delivery updated",
                 message: `Your pooled delivery status is now ${status}.`,
-                entityType: "SYSTEM",
+                entityType: "DELIVERY",
                 entityId: delivery._id,
             }),
             ...farmerIds
@@ -530,7 +530,7 @@ export const updatePooledDeliveryStatus = async (req, res) => {
                         type: "DELIVERY_UPDATED",
                         title: "Pooled delivery updated",
                         message: `The pooled delivery status is now ${status}.`,
-                        entityType: "SYSTEM",
+                        entityType: "DELIVERY",
                         entityId: delivery._id,
                     })
                 ),
