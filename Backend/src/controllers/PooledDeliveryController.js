@@ -552,3 +552,109 @@ export const updatePooledDeliveryStatus = async (req, res) => {
         });
     }
 };
+
+
+
+/*
+ * @desc    Buyer confirms receipt of a pooled delivery
+ * @route   PATCH /api/pooled-deliveries/:id/confirm
+ * @access  Private - BUYER
+ */
+export const confirmPooledDelivery = async (req, res) => {
+    try {
+        const buyerId = getUserId(req);
+        const { id } = req.params;
+
+        if (!buyerId || req.user?.role !== "BUYER") {
+            return res.status(403).json({
+                success: false,
+                message: "Only buyers can confirm delivery.",
+            });
+        }
+
+        if (!mongoose.isValidObjectId(id)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid pooled delivery ID.",
+            });
+        }
+
+        const delivery = await PooledDelivery.findById(id);
+
+        if (!delivery) {
+            return res.status(404).json({
+                success: false,
+                message: "Pooled delivery not found.",
+            });
+        }
+
+        if (String(delivery.buyer) !== buyerId) {
+            return res.status(403).json({
+                success: false,
+                message: "You can only confirm your own deliveries.",
+            });
+        }
+
+        if (delivery.status !== "DELIVERED") {
+            return res.status(409).json({
+                success: false,
+                message:
+                    "The delivery must be marked DELIVERED before confirmation.",
+            });
+        }
+
+        // Make repeated requests safe.
+        if (delivery.buyerConfirmed) {
+            return res.status(200).json({
+                success: true,
+                message: "Delivery has already been confirmed.",
+                data: delivery,
+            });
+        }
+
+        delivery.buyerConfirmed = true;
+        delivery.buyerConfirmedAt = new Date();
+
+        await delivery.save();
+
+        // Notify all farmers who contributed to this pooled deal.
+        const deal = await PooledDeal.findById(delivery.pooledDeal);
+
+        if (deal) {
+            const farmerIds = [
+                ...new Set(
+                    deal.contributions.map((item) =>
+                        String(item.farmer?._id || item.farmer)
+                    )
+                ),
+            ];
+
+            await Promise.allSettled(
+                farmerIds.map((farmerId) =>
+                    createNotification({
+                        recipient: farmerId,
+                        type: "DELIVERY_UPDATED",
+                        title: "Buyer confirmed delivery",
+                        message:
+                            "The buyer has confirmed receipt of the pooled delivery.",
+                        entityType: "DELIVERY",
+                        entityId: delivery._id,
+                    })
+                )
+            );
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Delivery receipt confirmed successfully.",
+            data: delivery,
+        });
+    } catch (error) {
+        console.error("Confirm pooled delivery error:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Unable to confirm pooled delivery.",
+        });
+    }
+};

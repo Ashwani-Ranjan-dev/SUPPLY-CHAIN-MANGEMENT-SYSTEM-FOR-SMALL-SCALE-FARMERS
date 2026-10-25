@@ -1,4 +1,3 @@
-
 import { useCallback, useEffect, useState } from "react";
 import {
     RefreshCw,
@@ -9,13 +8,17 @@ import {
     User,
     Phone,
     CheckCircle2,
+    Check,
     Clock,
     AlertCircle,
     LoaderCircle,
     Navigation,
 } from "lucide-react";
 
-import { getBuyerPooledDeliveries } from "../../services/pooledDeliveryServices";
+import {
+    getBuyerPooledDeliveries,
+    confirmPooledDelivery,
+} from "../../services/pooledDeliveryServices";
 
 const STATUS_STEPS = [
     "NOT_ASSIGNED",
@@ -32,11 +35,6 @@ const STATUS_LABELS = {
     IN_TRANSIT: "In transit",
     DELIVERED: "Delivered",
     CANCELLED: "Cancelled",
-};
-
-const getId = (value) => {
-    if (!value) return "";
-    return String(typeof value === "object" ? value._id : value);
 };
 
 const formatDate = (date) => {
@@ -73,6 +71,11 @@ export default function BuyerPooledDeliveries() {
     const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState("");
 
+    // Buyer receipt confirmation states
+    const [confirmingId, setConfirmingId] = useState(null);
+    const [actionMessage, setActionMessage] = useState("");
+    const [actionError, setActionError] = useState("");
+
     const loadDeliveries = useCallback(async (isRefresh = false) => {
         if (isRefresh) {
             setRefreshing(true);
@@ -95,7 +98,9 @@ export default function BuyerPooledDeliveries() {
 
             setDeliveries(records);
         } catch (err) {
-            setError(err.message || "Unable to load pooled deliveries.");
+            setError(
+                err.message || "Unable to load pooled deliveries."
+            );
         } finally {
             setLoading(false);
             setRefreshing(false);
@@ -106,16 +111,55 @@ export default function BuyerPooledDeliveries() {
         loadDeliveries();
     }, [loadDeliveries]);
 
+    // Confirm receipt of a delivered pooled order
+    const handleConfirmReceipt = async (deliveryId) => {
+        const confirmed = window.confirm(
+            "Confirm that you have received this pooled delivery?"
+        );
+
+        if (!confirmed) return;
+
+        setConfirmingId(deliveryId);
+        setActionMessage("");
+        setActionError("");
+
+        try {
+            const result = await confirmPooledDelivery(deliveryId);
+
+            setActionMessage(
+                result?.message ||
+                    "Delivery receipt confirmed successfully."
+            );
+
+            // Reload data to display the persisted confirmation.
+            await loadDeliveries(true);
+        } catch (err) {
+            setActionError(
+                err.message ||
+                    "Unable to confirm delivery receipt."
+            );
+        } finally {
+            setConfirmingId(null);
+        }
+    };
+
+    // Delivery statistics
     const stats = {
         total: deliveries.length,
+
         inProgress: deliveries.filter((delivery) =>
-            ["ASSIGNED", "PICKED_UP", "IN_TRANSIT"].includes(delivery.status)
+            ["ASSIGNED", "PICKED_UP", "IN_TRANSIT"].includes(
+                delivery.status
+            )
         ).length,
+
         delivered: deliveries.filter(
             (delivery) => delivery.status === "DELIVERED"
         ).length,
+
         awaitingAssignment: deliveries.filter(
-            (delivery) => delivery.status === "NOT_ASSIGNED"
+            (delivery) =>
+                (delivery.status || "NOT_ASSIGNED") === "NOT_ASSIGNED"
         ).length,
     };
 
@@ -123,7 +167,10 @@ export default function BuyerPooledDeliveries() {
         return (
             <div className="min-h-screen bg-gray-50 p-6">
                 <div className="mx-auto flex max-w-7xl items-center justify-center gap-3 py-24 text-gray-600">
-                    <LoaderCircle className="animate-spin" size={24} />
+                    <LoaderCircle
+                        className="animate-spin"
+                        size={24}
+                    />
                     <span>Loading your pooled deliveries...</span>
                 </div>
             </div>
@@ -133,6 +180,7 @@ export default function BuyerPooledDeliveries() {
     return (
         <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
             <div className="mx-auto max-w-7xl space-y-6">
+
                 {/* Header */}
                 <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                     <div>
@@ -148,7 +196,8 @@ export default function BuyerPooledDeliveries() {
                         </h1>
 
                         <p className="mt-2 text-sm text-gray-600">
-                            Track delivery progress for your accepted and paid pooled deals.
+                            Track delivery progress for your accepted
+                            and paid pooled deals.
                         </p>
                     </div>
 
@@ -166,16 +215,24 @@ export default function BuyerPooledDeliveries() {
                     </button>
                 </div>
 
-                {/* Error */}
+                {/* Delivery loading error */}
                 {error && (
                     <div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-red-800">
-                        <AlertCircle size={20} className="mt-0.5 shrink-0" />
+                        <AlertCircle
+                            size={20}
+                            className="mt-0.5 shrink-0"
+                        />
+
                         <div className="flex-1">
                             <p className="font-semibold">
                                 Could not load pooled deliveries
                             </p>
-                            <p className="mt-1 text-sm">{error}</p>
+
+                            <p className="mt-1 text-sm">
+                                {error}
+                            </p>
                         </div>
+
                         <button
                             type="button"
                             onClick={() => loadDeliveries(true)}
@@ -183,6 +240,26 @@ export default function BuyerPooledDeliveries() {
                         >
                             Retry
                         </button>
+                    </div>
+                )}
+
+                {/* Receipt confirmation success message */}
+                {actionMessage && (
+                    <div
+                        role="status"
+                        className="rounded-xl border border-green-200 bg-green-50 p-4 text-sm font-medium text-green-800"
+                    >
+                        {actionMessage}
+                    </div>
+                )}
+
+                {/* Receipt confirmation error message */}
+                {actionError && (
+                    <div
+                        role="alert"
+                        className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800"
+                    >
+                        {actionError}
                     </div>
                 )}
 
@@ -230,13 +307,19 @@ export default function BuyerPooledDeliveries() {
                                         <p className="text-sm text-gray-500">
                                             {stat.label}
                                         </p>
+
                                         <p className="mt-2 text-3xl font-bold text-gray-900">
                                             {stat.value}
                                         </p>
                                     </div>
 
-                                    <div className={`rounded-xl p-3 ${stat.bg}`}>
-                                        <Icon className={stat.color} size={24} />
+                                    <div
+                                        className={`rounded-xl p-3 ${stat.bg}`}
+                                    >
+                                        <Icon
+                                            className={stat.color}
+                                            size={24}
+                                        />
                                     </div>
                                 </div>
                             </div>
@@ -248,7 +331,10 @@ export default function BuyerPooledDeliveries() {
                 {!error && deliveries.length === 0 ? (
                     <div className="rounded-2xl border border-dashed border-gray-300 bg-white px-6 py-16 text-center">
                         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-50">
-                            <Truck size={30} className="text-green-700" />
+                            <Truck
+                                size={30}
+                                className="text-green-700"
+                            />
                         </div>
 
                         <h2 className="mt-5 text-xl font-bold text-gray-900">
@@ -256,15 +342,20 @@ export default function BuyerPooledDeliveries() {
                         </h2>
 
                         <p className="mx-auto mt-2 max-w-md text-sm text-gray-600">
-                            Once an accepted pooled deal has been paid for and
-                            a delivery is created, it will appear here.
+                            Once an accepted pooled deal has been paid
+                            for and a delivery is created, it will
+                            appear here.
                         </p>
                     </div>
                 ) : (
                     <div className="space-y-5">
                         {deliveries.map((delivery) => {
-                            const status = delivery.status || "NOT_ASSIGNED";
-                            const currentStep = STATUS_STEPS.indexOf(status);
+                            const status =
+                                delivery.status || "NOT_ASSIGNED";
+
+                            const currentStep =
+                                STATUS_STEPS.indexOf(status);
+
                             const deal =
                                 delivery.pooledDeal &&
                                 typeof delivery.pooledDeal === "object"
@@ -277,8 +368,11 @@ export default function BuyerPooledDeliveries() {
                                     ? delivery.pooledLot
                                     : null;
 
-                            const partner = delivery.deliveryPartner || {};
-                            const isCancelled = status === "CANCELLED";
+                            const partner =
+                                delivery.deliveryPartner || {};
+
+                            const isCancelled =
+                                status === "CANCELLED";
 
                             return (
                                 <article
@@ -304,27 +398,40 @@ export default function BuyerPooledDeliveries() {
 
                                                 <p className="mt-1 text-sm text-gray-500">
                                                     Delivery ID:{" "}
-                                                    {String(delivery._id).slice(-8).toUpperCase()}
+                                                    {String(
+                                                        delivery._id
+                                                    )
+                                                        .slice(-8)
+                                                        .toUpperCase()}
                                                 </p>
 
                                                 <p className="mt-1 text-sm text-gray-600">
-                                                    Quantity: {formatQuantity(delivery)}
+                                                    Quantity:{" "}
+                                                    {formatQuantity(
+                                                        delivery
+                                                    )}
                                                 </p>
                                             </div>
                                         </div>
 
                                         <span
-                                            className={`inline-flex w-fit items-center rounded-full px-3 py-1.5 text-xs font-bold ${statusStyles[status] || statusStyles.NOT_ASSIGNED}`}
+                                            className={`inline-flex w-fit items-center rounded-full px-3 py-1.5 text-xs font-bold ${
+                                                statusStyles[status] ||
+                                                statusStyles.NOT_ASSIGNED
+                                            }`}
                                         >
-                                            {STATUS_LABELS[status] || status}
+                                            {STATUS_LABELS[status] ||
+                                                status}
                                         </span>
                                     </div>
 
                                     <div className="space-y-6 p-5">
-                                        {/* Progress */}
+
+                                        {/* Delivery Progress */}
                                         {isCancelled ? (
                                             <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
-                                                This pooled delivery has been cancelled.
+                                                This pooled delivery has
+                                                been cancelled.
                                             </div>
                                         ) : (
                                             <div>
@@ -333,67 +440,85 @@ export default function BuyerPooledDeliveries() {
                                                 </h3>
 
                                                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
-                                                    {STATUS_STEPS.map((step, index) => {
-                                                        const completed =
-                                                            currentStep >= index;
-                                                        const isCurrent =
-                                                            currentStep === index;
+                                                    {STATUS_STEPS.map(
+                                                        (step, index) => {
+                                                            const completed =
+                                                                currentStep >=
+                                                                index;
 
-                                                        return (
-                                                            <div
-                                                                key={step}
-                                                                className="flex items-start gap-2 sm:flex-col sm:items-center sm:text-center"
-                                                            >
+                                                            const isCurrent =
+                                                                currentStep ===
+                                                                index;
+
+                                                            return (
                                                                 <div
-                                                                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
-                                                                        completed
-                                                                            ? "bg-green-600 text-white"
-                                                                            : "bg-gray-100 text-gray-400"
-                                                                    }`}
+                                                                    key={step}
+                                                                    className="flex items-start gap-2 sm:flex-col sm:items-center sm:text-center"
                                                                 >
-                                                                    {completed ? (
-                                                                        <CheckCircle2 size={19} />
-                                                                    ) : (
-                                                                        <span className="text-sm font-semibold">
-                                                                            {index + 1}
-                                                                        </span>
-                                                                    )}
-                                                                </div>
-
-                                                                <div>
-                                                                    <p
-                                                                        className={`text-sm font-semibold ${
-                                                                            isCurrent
-                                                                                ? "text-green-700"
-                                                                                : completed
-                                                                                    ? "text-gray-800"
-                                                                                    : "text-gray-400"
+                                                                    <div
+                                                                        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
+                                                                            completed
+                                                                                ? "bg-green-600 text-white"
+                                                                                : "bg-gray-100 text-gray-400"
                                                                         }`}
                                                                     >
-                                                                        {STATUS_LABELS[step]}
-                                                                    </p>
+                                                                        {completed ? (
+                                                                            <CheckCircle2
+                                                                                size={
+                                                                                    19
+                                                                                }
+                                                                            />
+                                                                        ) : (
+                                                                            <span className="text-sm font-semibold">
+                                                                                {index +
+                                                                                    1}
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
 
-                                                                    {isCurrent && (
-                                                                        <p className="mt-1 text-xs text-green-700">
-                                                                            Current stage
+                                                                    <div>
+                                                                        <p
+                                                                            className={`text-sm font-semibold ${
+                                                                                isCurrent
+                                                                                    ? "text-green-700"
+                                                                                    : completed
+                                                                                        ? "text-gray-800"
+                                                                                        : "text-gray-400"
+                                                                            }`}
+                                                                        >
+                                                                            {
+                                                                                STATUS_LABELS[
+                                                                                    step
+                                                                                ]
+                                                                            }
                                                                         </p>
-                                                                    )}
+
+                                                                        {isCurrent && (
+                                                                            <p className="mt-1 text-xs text-green-700">
+                                                                                Current
+                                                                                stage
+                                                                            </p>
+                                                                        )}
+                                                                    </div>
                                                                 </div>
-                                                            </div>
-                                                        );
-                                                    })}
+                                                            );
+                                                        }
+                                                    )}
                                                 </div>
                                             </div>
                                         )}
 
                                         {/* Delivery Details */}
                                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+
+                                            {/* Destination */}
                                             <div className="rounded-xl bg-gray-50 p-4">
                                                 <div className="mb-3 flex items-center gap-2">
                                                     <MapPin
                                                         size={19}
                                                         className="text-green-700"
                                                     />
+
                                                     <h3 className="font-semibold text-gray-900">
                                                         Delivery Destination
                                                     </h3>
@@ -406,6 +531,7 @@ export default function BuyerPooledDeliveries() {
 
                                                 <div className="mt-4 flex items-center gap-2 text-sm text-gray-600">
                                                     <Navigation size={16} />
+
                                                     <span>
                                                         Pickup:{" "}
                                                         {delivery.pickupLocation ||
@@ -415,40 +541,56 @@ export default function BuyerPooledDeliveries() {
                                                 </div>
                                             </div>
 
+                                            {/* Delivery Partner */}
                                             <div className="rounded-xl bg-gray-50 p-4">
                                                 <div className="mb-3 flex items-center gap-2">
                                                     <Truck
                                                         size={19}
                                                         className="text-green-700"
                                                     />
+
                                                     <h3 className="font-semibold text-gray-900">
                                                         Delivery Partner
                                                     </h3>
                                                 </div>
 
-                                                {partner.name || partner.phone ? (
+                                                {partner.name ||
+                                                partner.phone ? (
                                                     <div className="space-y-2 text-sm text-gray-700">
                                                         <p className="flex items-center gap-2">
-                                                            <User size={16} />
-                                                            {partner.name || "Name not provided"}
+                                                            <User
+                                                                size={16}
+                                                            />
+                                                            {partner.name ||
+                                                                "Name not provided"}
                                                         </p>
 
                                                         {partner.phone && (
                                                             <p className="flex items-center gap-2">
-                                                                <Phone size={16} />
-                                                                {partner.phone}
+                                                                <Phone
+                                                                    size={
+                                                                        16
+                                                                    }
+                                                                />
+                                                                {
+                                                                    partner.phone
+                                                                }
                                                             </p>
                                                         )}
                                                     </div>
                                                 ) : (
                                                     <p className="text-sm text-gray-500">
-                                                        A delivery partner has not
-                                                        been assigned yet.
+                                                        A delivery partner
+                                                        has not been
+                                                        assigned yet.
                                                     </p>
                                                 )}
 
                                                 <div className="mt-4 flex items-center gap-2 text-sm text-gray-600">
-                                                    <CalendarDays size={16} />
+                                                    <CalendarDays
+                                                        size={16}
+                                                    />
+
                                                     <span>
                                                         Estimated delivery:{" "}
                                                         {formatDate(
@@ -459,35 +601,133 @@ export default function BuyerPooledDeliveries() {
                                             </div>
                                         </div>
 
-                                        {/* Deal and delivery information */}
+                                        {/* Deal and Delivery Information */}
                                         <div className="flex flex-wrap gap-3 text-sm text-gray-600">
                                             <span className="rounded-lg border border-gray-200 px-3 py-2">
                                                 Deal status:{" "}
                                                 <strong>
-                                                    {deal?.status || "Unavailable"}
+                                                    {deal?.status ||
+                                                        "Unavailable"}
                                                 </strong>
                                             </span>
 
                                             <span className="rounded-lg border border-gray-200 px-3 py-2">
                                                 Payment:{" "}
                                                 <strong>
-                                                    {delivery.paymentStatus || "Unavailable"}
+                                                    {delivery.paymentStatus ||
+                                                        "Unavailable"}
                                                 </strong>
                                             </span>
 
                                             <span className="rounded-lg border border-gray-200 px-3 py-2">
                                                 Created:{" "}
                                                 <strong>
-                                                    {formatDate(delivery.createdAt)}
+                                                    {formatDate(
+                                                        delivery.createdAt
+                                                    )}
                                                 </strong>
                                             </span>
                                         </div>
 
+                                        {/* Buyer Delivery Confirmation */}
+                                        {status === "DELIVERED" && (
+                                            <div className="rounded-xl border border-green-200 bg-green-50 p-4">
+                                                {delivery.buyerConfirmed ? (
+                                                    <div className="flex items-center gap-2 text-green-800">
+                                                        <CheckCircle2
+                                                            size={20}
+                                                        />
+
+                                                        <div>
+                                                            <p className="font-semibold">
+                                                                Receipt
+                                                                confirmed
+                                                            </p>
+
+                                                            <p className="mt-1 text-sm">
+                                                                You have
+                                                                confirmed
+                                                                that this
+                                                                delivery was
+                                                                received.
+                                                            </p>
+
+                                                            {delivery.buyerConfirmedAt && (
+                                                                <p className="mt-1 text-xs text-green-700">
+                                                                    Confirmed
+                                                                    on:{" "}
+                                                                    {formatDate(
+                                                                        delivery.buyerConfirmedAt
+                                                                    )}
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                                        <div>
+                                                            <p className="font-semibold text-green-900">
+                                                                Have you
+                                                                received this
+                                                                delivery?
+                                                            </p>
+
+                                                            <p className="mt-1 text-sm text-green-800">
+                                                                Confirm receipt
+                                                                after checking
+                                                                your pooled
+                                                                order.
+                                                            </p>
+                                                        </div>
+
+                                                        <button
+                                                            type="button"
+                                                            onClick={() =>
+                                                                handleConfirmReceipt(
+                                                                    delivery._id
+                                                                )
+                                                            }
+                                                            disabled={
+                                                                confirmingId ===
+                                                                delivery._id
+                                                            }
+                                                            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-green-700 px-4 py-3 font-semibold text-white transition hover:bg-green-800 disabled:cursor-not-allowed disabled:opacity-60"
+                                                        >
+                                                            {confirmingId ===
+                                                            delivery._id ? (
+                                                                <>
+                                                                    <LoaderCircle
+                                                                        size={
+                                                                            18
+                                                                        }
+                                                                        className="animate-spin"
+                                                                    />
+                                                                    Confirming...
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <Check
+                                                                        size={
+                                                                            18
+                                                                        }
+                                                                    />
+                                                                    Confirm
+                                                                    Receipt
+                                                                </>
+                                                            )}
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+
+                                        {/* Delivery Notes */}
                                         {delivery.notes && (
                                             <div className="rounded-xl border border-gray-200 p-4">
                                                 <p className="text-sm font-semibold text-gray-800">
                                                     Delivery Notes
                                                 </p>
+
                                                 <p className="mt-1 whitespace-pre-wrap text-sm text-gray-600">
                                                     {delivery.notes}
                                                 </p>

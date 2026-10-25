@@ -98,6 +98,17 @@ const pooledDeliverySchema = new mongoose.Schema(
             type: Date,
             default: null,
         },
+        // Records buyer confirmation after delivery.
+        buyerConfirmedAt: {
+            type: Date,
+            default: null,
+        },
+
+        buyerConfirmed: {
+            type: Boolean,
+            default: false,
+            index: true,
+        },
 
         notes: {
             type: String,

@@ -8,6 +8,7 @@ import {
     getFarmerPooledDeliveries,
     getPooledDeliveryById,
     updatePooledDeliveryStatus,
+    confirmPooledDelivery
 } from "../controllers/PooledDeliveryController.js";
 
 const router = express.Router();
@@ -21,10 +22,8 @@ router.get("/farmer", protect, getFarmerPooledDeliveries);
 
 router.get("/:id", protect, getPooledDeliveryById);
 
-router.patch(
-    "/:id/status",
-    protect,
-    updatePooledDeliveryStatus
-);
+router.patch("/:id/status", protect,  updatePooledDeliveryStatus);
+
+router.patch("/:id/confirm" , protect, confirmPooledDelivery);
 
 export default router;

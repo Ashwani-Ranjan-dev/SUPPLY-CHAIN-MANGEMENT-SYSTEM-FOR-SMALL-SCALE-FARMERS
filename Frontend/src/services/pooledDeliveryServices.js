@@ -79,3 +79,27 @@ export const updatePooledDeliveryStatus = async (
         }
     );
 };
+
+// Confirm receipt of a pooled delivery (BUYER only)
+export const confirmPooledDelivery = async (deliveryId) => {
+    const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/pooled-deliveries/${deliveryId}/confirm`,
+        {
+            method: "PATCH",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json",
+            },
+        }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok) {
+        throw new Error(
+            result.message || "Unable to confirm delivery receipt."
+        );
+    }
+
+    return result;
+};
