@@ -42,3 +42,35 @@ export const searchMarketPrice = async(crop) =>{
 
     return data;
 }
+
+
+export const getMarketPriceHistory = async ({
+    crop,
+    market,
+    days = 30,
+}) => {
+    const params = new URLSearchParams({
+        crop,
+        market,
+        days: String(days),
+    });
+
+    const response = await fetch(
+        `${API_URL}/market-prices/history?${params}`,
+        {
+            method: "GET",
+            credentials: "include",
+        }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        throw new Error(
+            data.message ||
+            "Unable to load market price history."
+        );
+    }
+
+    return data;
+};

@@ -1,56 +1,101 @@
+
 import mongoose from "mongoose";
 
 const MarketPriceSchema = new mongoose.Schema(
     {
-        crop : {
-            type : String,
-            required : true,
-            trim : true
+        crop: {
+            type: String,
+            required: true,
+            trim: true,
         },
-        market : {
-            type : String,
-            required : true,
-            trim : true
+
+        market: {
+            type: String,
+            required: true,
+            trim: true,
         },
-        location : {
-            type : String,
-            required : true,
-            trim : true
+
+        location: {
+            type: String,
+            required: true,
+            trim: true,
         },
-        unit : {
-            type : String,
-            enum : 
-            [
-                "KG",
-                "QUINTAL",
-                "TON"
-            ],
-            default : "QUINTAL",
+
+        state: {
+            type: String,
+            trim: true,
+            default: "",
         },
-        minPrice : {
-            type : Number,
-            required : true,
-            min : 0
+
+        district: {
+            type: String,
+            trim: true,
+            default: "",
         },
-        maxPrice : {
-            type : Number,
-            required : true,
-            min : 0
+
+        variety: {
+            type: String,
+            trim: true,
+            default: "",
         },
-        modalPrice : {
-            type : Number,
-            required : true,
-            min : 0
+
+        grade: {
+            type: String,
+            trim: true,
+            default: "",
         },
-        updatedAt: {
-            type : Date,
-            default : Date.now,
+
+        unit: {
+            type: String,
+            enum: ["KG", "QUINTAL", "TON"],
+            default: "QUINTAL",
         },
-    },{
-        timestamps : true,
+
+        minPrice: {
+            type: Number,
+            required: true,
+            min: 0,
+        },
+
+        maxPrice: {
+            type: Number,
+            required: true,
+            min: 0,
+        },
+
+        modalPrice: {
+            type: Number,
+            required: true,
+            min: 0,
+        },
+
+        // Date reported by the mandi data source.
+        priceDate: {
+            type: Date,
+            default: null,
+        },
+
+        source: {
+            type: String,
+            enum: ["MANUAL", "DATA_GOV_IN"],
+            default: "MANUAL",
+        },
+    },
+    {
+        timestamps: true,
     }
 );
 
-const MarketPrice = mongoose.model("MarketPrice" , MarketPriceSchema);
+MarketPriceSchema.index({
+    crop: 1,
+    market: 1,
+    location: 1,
+    priceDate: -1,
+});
+
+const MarketPrice = mongoose.model(
+    "MarketPrice",
+    MarketPriceSchema
+);
 
 export default MarketPrice;
