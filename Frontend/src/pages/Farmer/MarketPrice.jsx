@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import {
     Search,
@@ -7,6 +8,8 @@ import {
 
 import MarketPriceListCard from "../../components/Farmer/MarketPriceListCard";
 import MarketPriceHistoryChart from "../../components/MarketPrice/MarketPriceHistoryChart.jsx";
+import CurrentMandiPriceSearch from "../../components/CurrentMandiPriceSearch";
+import MandiSyncStatus from "../../components/MandiSyncStatus.jsx";
 
 import {
     getMarketPrice,
@@ -18,6 +21,7 @@ const MarketPrices = () => {
     const [error, setError] = useState("");
     const [search, setSearch] = useState("");
 
+    // Load saved market prices from the backend.
     const loadPrices = async () => {
         try {
             setLoading(true);
@@ -36,14 +40,16 @@ const MarketPrices = () => {
         }
     };
 
+    // Load market prices when the page opens.
     useEffect(() => {
         loadPrices();
     }, []);
 
+    // Filter existing market-price cards by crop name.
     const filteredPrices = prices.filter((price) =>
         (price.crop || "")
             .toLowerCase()
-            .includes(search.toLowerCase())
+            .includes(search.toLowerCase().trim())
     );
 
     return (
@@ -70,12 +76,12 @@ const MarketPrices = () => {
                         </div>
                     </div>
 
-                    {/* Refresh Current Market Prices */}
+                    {/* Refresh Existing Market Prices */}
                     <button
                         type="button"
                         onClick={loadPrices}
                         disabled={loading}
-                        className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                         <RefreshCw
                             size={17}
@@ -83,16 +89,31 @@ const MarketPrices = () => {
                                 loading ? "animate-spin" : ""
                             }
                         />
+
                         Refresh Prices
                     </button>
                 </div>
 
+                {/* Mandi API Synchronization Status */}
+                <section className="mb-8">
+                    <MandiSyncStatus
+                        onSyncSuccess={loadPrices}
+                    />
+                </section>
+
+                {/* Current State-Wise Live Mandi Price Search */}
+                <section className="mb-8">
+                    <CurrentMandiPriceSearch />
+                </section>
+
                 {/* Historical Mandi Price Chart */}
                 <div className="mb-8">
-                    <MarketPriceHistoryChart prices={prices} />
+                    <MarketPriceHistoryChart
+                        prices={prices}
+                    />
                 </div>
 
-                {/* Search Market Prices */}
+                {/* Search Existing Market-Price Cards */}
                 <div className="mb-7 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
                     <div className="relative">
                         <Search
@@ -107,6 +128,7 @@ const MarketPrices = () => {
                                 setSearch(event.target.value)
                             }
                             placeholder="Search crop..."
+                            aria-label="Search saved market prices by crop"
                             className="w-full rounded-xl border border-gray-200 bg-gray-50 py-3 pl-11 pr-4 text-sm outline-none transition focus:border-green-500 focus:bg-white focus:ring-4 focus:ring-green-100"
                         />
                     </div>
@@ -114,12 +136,15 @@ const MarketPrices = () => {
 
                 {/* Error Message */}
                 {error && (
-                    <div className="mb-6 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
+                    <div
+                        role="alert"
+                        className="mb-6 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-red-600"
+                    >
                         {error}
                     </div>
                 )}
 
-                {/* Loading Skeletons */}
+                {/* Loading Skeletons, Empty State, and Market-Price Cards */}
                 {loading ? (
                     <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
                         {[1, 2, 3].map((item) => (
@@ -142,11 +167,23 @@ const MarketPrices = () => {
                         </h3>
 
                         <p className="mt-1 text-sm text-gray-500">
-                            Try searching for another crop.
+                            {search.trim()
+                                ? "Try searching for another crop."
+                                : "No saved market prices are available yet."}
                         </p>
+
+                        <button
+                            type="button"
+                            onClick={loadPrices}
+                            disabled={loading}
+                            className="mt-5 inline-flex items-center gap-2 rounded-xl bg-green-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-green-700 disabled:opacity-50"
+                        >
+                            <RefreshCw size={16} />
+                            Try Again
+                        </button>
                     </div>
                 ) : (
-                    /* Market Price Cards */
+                    /* Existing Market-Price Cards */
                     <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
                         {filteredPrices.map((price) => (
                             <MarketPriceListCard

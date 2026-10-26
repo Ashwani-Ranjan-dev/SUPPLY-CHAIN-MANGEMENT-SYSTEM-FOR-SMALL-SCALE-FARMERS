@@ -1,34 +1,37 @@
 import MarketPrice from "../models/MarketPriceSchema.js";
-import { fetchMandiPrices } from "../services/mandiPriceApi.js";
+import {
+    runMandiPriceSync,
+    getMandiSyncStatus,
+} from "../services/mandiPriceSyncManager.js";
 
 // Controller to get the Market price
-export const getMarketPrice = async(
+export const getMarketPrice = async (
     req,
     res
-) =>{
-    try{
+) => {
+    try {
         const prices = await MarketPrice.find()
-                        .sort({
-                            updatedAt  : -1,
-                        });
+            .sort({
+                updatedAt: -1,
+            });
 
         return res.status(200).json({
-            success : true,
-            count : prices.length,
+            success: true,
+            count: prices.length,
             prices,
         });
-    }catch(error){
+    } catch (error) {
         console.error(
             "Get Market prices error : ",
             error
         );
 
         return res.status(500).json({
-            success : false,
-            message : "Unable to load the market price."
+            success: false,
+            message: "Unable to load the market price.",
         });
     }
-}
+};
 
 // Controller for MarketPrice Search
 export const searchMarketPrices =
@@ -71,7 +74,6 @@ export const searchMarketPrices =
         }
     };
 
-
 const parseArrivalDate = (value) => {
     if (!value) return null;
 
@@ -101,148 +103,72 @@ const parseArrivalDate = (value) => {
 
 export const syncMarketPrices = async (req, res) => {
     try {
-        const {
+        const { state, commodity, market } = req.body || {};
+
+        const result = await runMandiPriceSync({
             state,
             commodity,
             market,
-        } = req.body || {};
-
-        const { records, total } =
-            await fetchMandiPrices({
-                limit: 1000,
-                offset: 0,
-                state,
-                commodity,
-                market,
-            });
-
-        const operations = [];
-
-        for (const record of records) {
-            const crop = String(
-                record.commodity || ""
-            ).trim();
-
-            const marketName = String(
-                record.market || ""
-            ).trim();
-
-            const stateName = String(
-                record.state || ""
-            ).trim();
-
-            const district = String(
-                record.district || ""
-            ).trim();
-
-            const minPrice = Number(record.min_price);
-            const maxPrice = Number(record.max_price);
-            const modalPrice = Number(record.modal_price);
-
-            const priceDate = parseArrivalDate(
-                record.arrival_date
-            );
-
-            if (
-                !crop ||
-                !marketName ||
-                !priceDate ||
-                !Number.isFinite(minPrice) ||
-                !Number.isFinite(maxPrice) ||
-                !Number.isFinite(modalPrice) ||
-                minPrice < 0 ||
-                maxPrice < minPrice ||
-                modalPrice < minPrice ||
-                modalPrice > maxPrice
-            ) {
-                continue;
-            }
-
-            const location = [
-                district,
-                stateName,
-            ].filter(Boolean).join(", ");
-
-            const variety = String(
-                record.variety || ""
-            ).trim();
-
-            const grade = String(
-                record.grade || ""
-            ).trim();
-
-            operations.push({
-                updateOne: {
-                    filter: {
-                        crop,
-                        market: marketName,
-                        location,
-                        priceDate,
-                        variety,
-                        grade,
-                        source: "DATA_GOV_IN",
-                    },
-
-                    update: {
-                        $set: {
-                            crop,
-                            market: marketName,
-                            location,
-                            state: stateName,
-                            district,
-                            variety,
-                            grade,
-                            unit: "QUINTAL",
-                            minPrice,
-                            maxPrice,
-                            modalPrice,
-                            priceDate,
-                            source: "DATA_GOV_IN",
-                        },
-                    },
-
-                    upsert: true,
-                },
-            });
-        }
-
-        let result = {
-            upsertedCount: 0,
-            modifiedCount: 0,
-        };
-
-        if (operations.length > 0) {
-            result = await MarketPrice.bulkWrite(
-                operations,
-                { ordered: false }
-            );
-        }
+            limit: 1000,
+            offset: 0,
+            source: "MANUAL",
+        });
 
         return res.status(200).json({
             success: true,
             message: "Mandi price synchronization completed.",
             source: "DATA_GOV_IN",
-            recordsReceived: records.length,
-            recordsValidated: operations.length,
-            totalAvailable: total,
-            inserted: result.upsertedCount || 0,
-            updated: result.modifiedCount || 0,
+            ...result,
+        });
+    }catch (error) {
+    if (error.code === "SYNC_IN_PROGRESS") {
+        return res.status(409).json({
+            success: false,
+            code: error.code,
+            message: error.message,
+        });
+    }
+
+    if (error.code === "SYNC_COOLDOWN") {
+        return res.status(429).json({
+            success: false,
+            code: error.code,
+            message: error.message,
+            nextAttemptAt: error.nextAttemptAt,
+        });
+    }
+
+    console.error("Mandi price synchronization failed:", error);
+
+    return res.status(502).json({
+        success: false,
+        message: "Mandi-price synchronization failed.",
+        error: error.message,
+    });
+}
+};
+
+// Get the current mandi price synchronization status
+export const getMarketPriceSyncStatus = async (req, res) => {
+    try {
+        const status = await getMandiSyncStatus();
+
+        return res.status(200).json({
+            success: true,
+            ...status,
         });
     } catch (error) {
         console.error(
-            "Sync market prices error:",
+            "Get mandi sync status error:",
             error.message
         );
 
-        return res.status(502).json({
+        return res.status(500).json({
             success: false,
-            message:
-                "Unable to synchronize mandi prices. Check the API key, resource ID, and government API availability.",
+            message: "Unable to load mandi sync status.",
         });
     }
 };
-
-
 
 export const getMarketPriceHistory = async (req, res) => {
     try {
@@ -262,9 +188,11 @@ export const getMarketPriceHistory = async (req, res) => {
 
         const endDate = new Date();
         const startDate = new Date(endDate);
+
         startDate.setUTCDate(
             startDate.getUTCDate() - (days - 1)
         );
+
         startDate.setUTCHours(0, 0, 0, 0);
 
         const filter = {
@@ -374,6 +302,135 @@ export const getMarketPriceHistory = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: "Unable to load market price history.",
+        });
+    }
+};
+
+const escapeRegexForQuery = (value) =>
+    value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+// Return state names represented in saved market-price records.
+export const getMarketPriceStates = async (req, res) => {
+    try {
+        const records = await MarketPrice.find({})
+            .select("state location")
+            .lean();
+
+        const states = [
+            ...new Set(
+                records
+                    .map((record) => {
+                        if (record.state?.trim()) {
+                            return record.state.trim();
+                        }
+
+                        // Supports older records that only have location.
+                        const location = record.location?.trim();
+
+                        if (!location) return null;
+
+                        const parts = location.split(",");
+
+                        return parts[parts.length - 1].trim() || null;
+                    })
+                    .filter(Boolean)
+            ),
+        ].sort((a, b) => a.localeCompare(b));
+
+        return res.status(200).json({
+            success: true,
+            count: states.length,
+            states,
+        });
+    } catch (error) {
+        console.error("Get mandi states error:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Unable to load available states.",
+        });
+    }
+};
+
+// Search saved mandi prices by state and crop.
+export const getCurrentMarketPrices = async (req, res) => {
+    try {
+        const state = req.query.state?.trim();
+        const crop = req.query.crop?.trim();
+
+        if (!state || !crop) {
+            return res.status(400).json({
+                success: false,
+                message: "Both state and crop are required.",
+            });
+        }
+
+        const escapedState = escapeRegexForQuery(state);
+        const escapedCrop = escapeRegexForQuery(crop);
+
+        const filter = {
+            crop: {
+                $regex: escapedCrop,
+                $options: "i",
+            },
+            $or: [
+                {
+                    state: {
+                        $regex: `^${escapedState}$`,
+                        $options: "i",
+                    },
+                },
+                {
+                    location: {
+                        $regex: `(^|,\\s*)${escapedState}(\\s*,|$)`,
+                        $options: "i",
+                    },
+                },
+            ],
+        };
+
+        const records = await MarketPrice.find(filter)
+            .sort({ priceDate: -1, updatedAt: -1 })
+            .select(
+                "crop market location state district variety grade unit minPrice maxPrice modalPrice priceDate updatedAt source"
+            )
+            .lean();
+
+        // Keep the newest available observation for each mandi/variety.
+        const seen = new Set();
+
+        const prices = records.filter((record) => {
+            const key = [
+                record.market || "",
+                record.location || "",
+                record.variety || "",
+                record.grade || "",
+            ]
+                .join("|")
+                .toLowerCase();
+
+            if (seen.has(key)) return false;
+
+            seen.add(key);
+            return true;
+        });
+
+        return res.status(200).json({
+            success: true,
+            state,
+            crop,
+            count: prices.length,
+            prices,
+        });
+    } catch (error) {
+        console.error(
+            "Search current mandi prices error:",
+            error
+        );
+
+        return res.status(500).json({
+            success: false,
+            message: "Unable to search current mandi prices.",
         });
     }
 };

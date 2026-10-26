@@ -1,8 +1,11 @@
 import express from "express";
 
-import {protect} from "../middleware/authMiddleware.js";
+import { protect } from "../middleware/authMiddleware.js";
 
-import { getMarketPrice , searchMarketPrices , syncMarketPrices , getMarketPriceHistory} from "../controllers/MarketPriceController.js";
+import {
+    getMarketPrice, searchMarketPrices, syncMarketPrices, getMarketPriceHistory,
+    getMarketPriceStates, getCurrentMarketPrices, getMarketPriceSyncStatus
+} from "../controllers/MarketPriceController.js";
 
 const router = express.Router();
 
@@ -30,4 +33,20 @@ router.get(
     getMarketPriceHistory
 );
 
+router.get(
+    "/states",
+    protect,
+    getMarketPriceStates
+);
+
+router.get("/current",
+    protect,
+    getCurrentMarketPrices
+);
+
+router.get(
+    "/sync/status",
+    protect,
+    getMarketPriceSyncStatus
+);
 export default router;
