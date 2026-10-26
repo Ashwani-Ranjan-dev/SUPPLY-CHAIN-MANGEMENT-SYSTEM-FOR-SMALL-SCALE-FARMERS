@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import {
     User,
@@ -14,6 +15,8 @@ import {
 
 import FarmerSidebar from "../../components/Farmer/farmerSideBar";
 import FarmerHeader from "../../components/Farmer/FarmerHeader";
+
+import UserReviewsSection from "../../components/reviews/UserReviewsSection";
 
 import {
     getFarmerProfile,
@@ -168,9 +171,7 @@ const FarmerProfile = () => {
                             <div>
                                 <div className="mb-2 flex items-center gap-2">
                                     <div className="rounded-lg bg-green-100 p-2 text-green-700">
-                                        <User
-                                            size={20}
-                                        />
+                                        <User size={20} />
                                     </div>
 
                                     <span className="text-sm font-semibold text-green-700">
@@ -202,18 +203,14 @@ const FarmerProfile = () => {
                         {/* Alerts */}
                         {success && (
                             <div className="mb-5 flex items-center gap-3 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
-                                <CheckCircle2
-                                    size={19}
-                                />
+                                <CheckCircle2 size={19} />
                                 {success}
                             </div>
                         )}
 
                         {error && (
                             <div className="mb-5 flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                                <AlertCircle
-                                    size={19}
-                                />
+                                <AlertCircle size={19} />
                                 {error}
                             </div>
                         )}
@@ -239,9 +236,7 @@ const FarmerProfile = () => {
                                         </p>
 
                                         <div className="mt-4 flex items-center gap-2 rounded-full bg-green-50 px-3 py-1.5 text-xs font-semibold text-green-700">
-                                            <ShieldCheck
-                                                size={14}
-                                            />
+                                            <ShieldCheck size={14} />
 
                                             {profile?.phoneVerified
                                                 ? "Phone Verified"
@@ -251,7 +246,7 @@ const FarmerProfile = () => {
                                 </div>
 
                                 {/* Personal Information */}
-                                <div className="lg:col-span-2 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+                                <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm lg:col-span-2">
                                     <div className="mb-6">
                                         <h2 className="text-lg font-bold text-gray-900">
                                             Personal Information
@@ -279,15 +274,9 @@ const FarmerProfile = () => {
                                                 <input
                                                     type="text"
                                                     name="name"
-                                                    value={
-                                                        formData.name
-                                                    }
-                                                    onChange={
-                                                        handleChange
-                                                    }
-                                                    disabled={
-                                                        !editing
-                                                    }
+                                                    value={formData.name}
+                                                    onChange={handleChange}
+                                                    disabled={!editing}
                                                     className="w-full rounded-xl border border-gray-200 bg-gray-50 py-3 pl-10 pr-4 text-sm text-gray-800 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100 disabled:cursor-not-allowed disabled:text-gray-500"
                                                 />
                                             </div>
@@ -307,18 +296,14 @@ const FarmerProfile = () => {
 
                                                 <input
                                                     type="text"
-                                                    value={
-                                                        profile?.phone ||
-                                                        ""
-                                                    }
+                                                    value={profile?.phone || ""}
                                                     disabled
                                                     className="w-full cursor-not-allowed rounded-xl border border-gray-200 bg-gray-100 py-3 pl-10 pr-4 text-sm text-gray-500"
                                                 />
                                             </div>
 
                                             <p className="mt-1.5 text-xs text-gray-400">
-                                                Phone number is
-                                                linked to OTP
+                                                Phone number is linked to OTP
                                                 authentication.
                                             </p>
                                         </div>
@@ -338,15 +323,9 @@ const FarmerProfile = () => {
                                                 <input
                                                     type="text"
                                                     name="village"
-                                                    value={
-                                                        formData.village
-                                                    }
-                                                    onChange={
-                                                        handleChange
-                                                    }
-                                                    disabled={
-                                                        !editing
-                                                    }
+                                                    value={formData.village}
+                                                    onChange={handleChange}
+                                                    disabled={!editing}
                                                     className="w-full rounded-xl border border-gray-200 bg-gray-50 py-3 pl-10 pr-4 text-sm text-gray-800 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100 disabled:cursor-not-allowed disabled:text-gray-500"
                                                 />
                                             </div>
@@ -367,15 +346,9 @@ const FarmerProfile = () => {
                                                 <input
                                                     type="text"
                                                     name="produceInterest"
-                                                    value={
-                                                        formData.produceInterest
-                                                    }
-                                                    onChange={
-                                                        handleChange
-                                                    }
-                                                    disabled={
-                                                        !editing
-                                                    }
+                                                    value={formData.produceInterest}
+                                                    onChange={handleChange}
+                                                    disabled={!editing}
                                                     placeholder="e.g. Rice, Wheat"
                                                     className="w-full rounded-xl border border-gray-200 bg-gray-50 py-3 pl-10 pr-4 text-sm text-gray-800 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100 disabled:cursor-not-allowed disabled:text-gray-500"
                                                 />
@@ -389,6 +362,8 @@ const FarmerProfile = () => {
                                             </label>
 
                                             <div className="grid gap-3 sm:grid-cols-2">
+
+                                                {/* Small Farmer */}
                                                 <label
                                                     className={`cursor-pointer rounded-xl border p-4 transition ${
                                                         formData.farmerType ===
@@ -409,12 +384,8 @@ const FarmerProfile = () => {
                                                             formData.farmerType ===
                                                             "SMALL"
                                                         }
-                                                        onChange={
-                                                            handleChange
-                                                        }
-                                                        disabled={
-                                                            !editing
-                                                        }
+                                                        onChange={handleChange}
+                                                        disabled={!editing}
                                                         className="sr-only"
                                                     />
 
@@ -433,15 +404,14 @@ const FarmerProfile = () => {
                                                         {formData.farmerType ===
                                                             "SMALL" && (
                                                             <CheckCircle2
-                                                                size={
-                                                                    20
-                                                                }
+                                                                size={20}
                                                                 className="text-green-600"
                                                             />
                                                         )}
                                                     </div>
                                                 </label>
 
+                                                {/* Large Farmer */}
                                                 <label
                                                     className={`cursor-pointer rounded-xl border p-4 transition ${
                                                         formData.farmerType ===
@@ -462,12 +432,8 @@ const FarmerProfile = () => {
                                                             formData.farmerType ===
                                                             "LARGE"
                                                         }
-                                                        onChange={
-                                                            handleChange
-                                                        }
-                                                        disabled={
-                                                            !editing
-                                                        }
+                                                        onChange={handleChange}
+                                                        disabled={!editing}
                                                         className="sr-only"
                                                     />
 
@@ -486,9 +452,7 @@ const FarmerProfile = () => {
                                                         {formData.farmerType ===
                                                             "LARGE" && (
                                                             <CheckCircle2
-                                                                size={
-                                                                    20
-                                                                }
+                                                                size={20}
                                                                 className="text-green-600"
                                                             />
                                                         )}
@@ -498,17 +462,13 @@ const FarmerProfile = () => {
                                         </div>
                                     </div>
 
-                                    {/* Actions */}
+                                    {/* Form Actions */}
                                     {editing && (
                                         <div className="mt-7 flex flex-col-reverse gap-3 border-t border-gray-100 pt-5 sm:flex-row sm:justify-end">
                                             <button
                                                 type="button"
-                                                onClick={
-                                                    handleCancel
-                                                }
-                                                disabled={
-                                                    saving
-                                                }
+                                                onClick={handleCancel}
+                                                disabled={saving}
                                                 className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 px-5 py-3 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 disabled:opacity-50"
                                             >
                                                 <X size={17} />
@@ -517,9 +477,7 @@ const FarmerProfile = () => {
 
                                             <button
                                                 type="submit"
-                                                disabled={
-                                                    saving
-                                                }
+                                                disabled={saving}
                                                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-green-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-60"
                                             >
                                                 <Save size={17} />
@@ -534,13 +492,16 @@ const FarmerProfile = () => {
                             </div>
                         </form>
 
+                        {/* Ratings and Reviews */}
+                        <UserReviewsSection
+                            userId={profile?._id || profile?.id}
+                        />
+
                         {/* Account Security */}
                         <div className="mt-6 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
                             <div className="flex items-start gap-4">
                                 <div className="rounded-xl bg-green-50 p-3 text-green-600">
-                                    <ShieldCheck
-                                        size={22}
-                                    />
+                                    <ShieldCheck size={22} />
                                 </div>
 
                                 <div>
@@ -549,10 +510,9 @@ const FarmerProfile = () => {
                                     </h2>
 
                                     <p className="mt-1 text-sm leading-6 text-gray-500">
-                                        Your mobile number is
-                                        protected through OTP-based
-                                        authentication. Profile
-                                        changes do not modify your
+                                        Your mobile number is protected
+                                        through OTP-based authentication.
+                                        Profile changes do not modify your
                                         authentication credentials.
                                     </p>
                                 </div>

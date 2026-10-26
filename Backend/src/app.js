@@ -17,6 +17,7 @@ import PoolingRoutes from "./routes/PoolingRoutes.js";
 import pooledDealRoutes from "./routes/PooledDealRoutes.js";
 import PooledPaymentRoutes from "./routes/pooledPaymentRoutes.js";
 import PooledDeliveryRoutes from "./routes/PooledDeliveryRoutes.js";
+import ReviewRoutes from "./routes/ReviewRoutes.js";
 
 
 const app = express();
@@ -54,6 +55,8 @@ app.use("/api/produce" , ProduceRoutes);
 app.use("/api/market-prices" , MarketPriceRoutes);
 
 app.use("/api/deals" , dealRoutes);
+
+app.use("/api/reviews" , ReviewRoutes);
 
 app.use("/api/payments" , PaymentRoutes);
 
