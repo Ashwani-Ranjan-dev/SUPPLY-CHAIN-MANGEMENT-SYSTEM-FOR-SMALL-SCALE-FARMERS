@@ -74,6 +74,15 @@ const produceSchema = new mongoose.Schema(
             default: null,
             index: true,
         },
+        imageUrl: {
+            type: String,
+            default: "",
+        },
+
+        imagePublicId: {
+            type: String,
+            default: "",
+        },
 
     },
     {

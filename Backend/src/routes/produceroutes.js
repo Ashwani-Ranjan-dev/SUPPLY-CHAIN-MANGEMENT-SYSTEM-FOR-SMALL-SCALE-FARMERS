@@ -1,6 +1,8 @@
+
 import express from "express";
 
-import {protect } from "../middleware/authMiddleware.js";
+import { protect } from "../middleware/authMiddleware.js";
+import produceImageUpload from "../middleware/produceImageUpload.js";
 
 import {
     createProduce,
@@ -9,7 +11,7 @@ import {
     updateProduce,
     deleteProduce,
     getAllProduce,
-    getMarketplaceProduceById
+    getMarketplaceProduceById,
 } from "../controllers/produceControllers.js";
 
 const router = express.Router();
@@ -17,6 +19,7 @@ const router = express.Router();
 router.post(
     "/",
     protect,
+    produceImageUpload.single("image"),
     createProduce
 );
 
@@ -35,6 +38,7 @@ router.get(
 router.put(
     "/:id",
     protect,
+    produceImageUpload.single("image"),
     updateProduce
 );
 
@@ -55,6 +59,5 @@ router.get(
     protect,
     getMarketplaceProduceById
 );
-
 
 export default router;
