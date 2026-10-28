@@ -18,6 +18,8 @@ import pooledDealRoutes from "./routes/PooledDealRoutes.js";
 import PooledPaymentRoutes from "./routes/pooledPaymentRoutes.js";
 import PooledDeliveryRoutes from "./routes/PooledDeliveryRoutes.js";
 import ReviewRoutes from "./routes/ReviewRoutes.js";
+import documentRoutes from "./routes/documentRoutes.js";
+import settlementRoutes from "./routes/settlementRoutes.js";
 
 
 const app = express();
@@ -76,5 +78,8 @@ app.use("/api/pooled-payments", PooledPaymentRoutes);
 
 app.use("/api/pooled-deliveries", PooledDeliveryRoutes);
 
+app.use("/api/documents", documentRoutes);
+
+app.use("/api/settlements", settlementRoutes);
 
 export default app;

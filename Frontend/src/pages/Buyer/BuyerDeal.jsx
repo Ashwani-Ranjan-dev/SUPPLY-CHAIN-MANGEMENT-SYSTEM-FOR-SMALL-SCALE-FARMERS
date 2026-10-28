@@ -15,6 +15,7 @@ import {
 
 import DealPayment from "./DealPayment";
 import ReviewForm from "../../components/reviews/ReviewForm";
+import DocumentDownloadButtons from "../../components/common/DocumentDownloadButton.jsx";
 
 import { getMyReviews } from "../../services/reviewServices.js";
 
@@ -32,7 +33,9 @@ const BuyerDeals = () => {
 
     const [activeFilter, setActiveFilter] = useState("ALL");
 
-    // Fetch buyer's deals.
+    // ==================================================
+    // FETCH BUYER'S DEALS
+    // ==================================================
     const fetchBuyerDeals = useCallback(async () => {
         try {
             setLoading(true);
@@ -60,7 +63,9 @@ const BuyerDeals = () => {
         }
     }, []);
 
-    // Fetch review history to identify deals already reviewed by this buyer.
+    // ==================================================
+    // FETCH REVIEW HISTORY
+    // ==================================================
     const fetchReviewHistory = useCallback(async () => {
         try {
             setReviewLoading(true);
@@ -78,6 +83,7 @@ const BuyerDeals = () => {
             setReviewedDealIds(ids);
         } catch (err) {
             console.error("Fetch review history error:", err);
+
             setReviewError(
                 err.message || "Unable to load review history."
             );
@@ -86,11 +92,17 @@ const BuyerDeals = () => {
         }
     }, []);
 
+    // ==================================================
+    // LOAD DATA
+    // ==================================================
     useEffect(() => {
         fetchBuyerDeals();
         fetchReviewHistory();
     }, [fetchBuyerDeals, fetchReviewHistory]);
 
+    // ==================================================
+    // REFRESH DEALS AND REVIEWS
+    // ==================================================
     const refreshAll = async () => {
         await Promise.all([
             fetchBuyerDeals(),
@@ -98,12 +110,16 @@ const BuyerDeals = () => {
         ]);
     };
 
-    // Reload review history after a successful submission.
+    // ==================================================
+    // RELOAD REVIEWS AFTER SUBMISSION
+    // ==================================================
     const handleReviewSubmitted = async () => {
         await fetchReviewHistory();
     };
 
-    // Apply the selected status filter.
+    // ==================================================
+    // FILTER DEALS
+    // ==================================================
     const filteredDeals = useMemo(
         () =>
             activeFilter === "ALL"
@@ -114,7 +130,9 @@ const BuyerDeals = () => {
         [deals, activeFilter]
     );
 
-    // Status badge configuration.
+    // ==================================================
+    // STATUS BADGE CONFIGURATION
+    // ==================================================
     const getStatusConfig = (status) => {
         switch (status) {
             case "ACCEPTED":
@@ -161,7 +179,9 @@ const BuyerDeals = () => {
         }
     };
 
-    // Initial deal-loading screen.
+    // ==================================================
+    // INITIAL LOADING STATE
+    // ==================================================
     if (loading) {
         return (
             <main className="min-h-screen bg-[#f5faf5] px-5 py-8 sm:px-8">
@@ -172,10 +192,13 @@ const BuyerDeals = () => {
         );
     }
 
+    // ==================================================
+    // BUYER DEALS PAGE
+    // ==================================================
     return (
         <main className="min-h-screen bg-[#f5faf5] px-5 py-8 sm:px-8">
             <div className="mx-auto max-w-6xl">
-                {/* Header */}
+                {/* HEADER */}
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <p className="text-sm font-bold tracking-wider text-green-600">
@@ -208,17 +231,19 @@ const BuyerDeals = () => {
                     </button>
                 </div>
 
-                {/* Deal loading errors */}
+                {/* DEAL LOADING ERRORS */}
                 {error && (
                     <div
                         role="alert"
                         className="mt-6 flex items-start gap-3 rounded-2xl border border-red-100 bg-red-50 p-4 text-red-700"
                     >
                         <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
+
                         <div>
                             <p className="font-semibold">
                                 Unable to load deals
                             </p>
+
                             <p className="mt-1 text-sm">{error}</p>
 
                             <button
@@ -232,7 +257,7 @@ const BuyerDeals = () => {
                     </div>
                 )}
 
-                {/* Review-history warning */}
+                {/* REVIEW-HISTORY WARNING */}
                 {reviewError && (
                     <div
                         role="alert"
@@ -254,7 +279,7 @@ const BuyerDeals = () => {
                     </div>
                 )}
 
-                {/* Status filters */}
+                {/* STATUS FILTERS */}
                 <div className="mt-6 flex flex-wrap gap-2">
                     {[
                         "ALL",
@@ -281,7 +306,7 @@ const BuyerDeals = () => {
                     ))}
                 </div>
 
-                {/* Empty state */}
+                {/* EMPTY STATE */}
                 {!error && filteredDeals.length === 0 && (
                     <div className="mt-6 rounded-3xl border border-gray-100 bg-white p-10 text-center shadow-sm">
                         <Package className="mx-auto h-10 w-10 text-gray-300" />
@@ -297,7 +322,7 @@ const BuyerDeals = () => {
                     </div>
                 )}
 
-                {/* Deal list */}
+                {/* DEAL LIST */}
                 <div className="mt-6 space-y-5">
                     {filteredDeals.map((deal) => {
                         const status = getStatusConfig(deal.status);
@@ -313,7 +338,7 @@ const BuyerDeals = () => {
                                 key={deal._id}
                                 className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm"
                             >
-                                {/* Deal header */}
+                                {/* DEAL HEADER */}
                                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                                     <div>
                                         <div className="flex flex-wrap items-center gap-3">
@@ -348,12 +373,13 @@ const BuyerDeals = () => {
                                     </div>
                                 </div>
 
-                                {/* Deal details */}
+                                {/* DEAL DETAILS */}
                                 <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                                     <div>
                                         <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
                                             Quantity
                                         </p>
+
                                         <p className="mt-1 font-semibold text-gray-900">
                                             {deal.quantity} {deal.unit}
                                         </p>
@@ -363,6 +389,7 @@ const BuyerDeals = () => {
                                         <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
                                             Offered Price
                                         </p>
+
                                         <p className="mt-1 font-semibold text-gray-900">
                                             ₹
                                             {Number(
@@ -375,6 +402,7 @@ const BuyerDeals = () => {
                                         <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
                                             Farmer
                                         </p>
+
                                         <p className="mt-1 font-semibold text-gray-900">
                                             {deal.farmer?.name || "Farmer"}
                                         </p>
@@ -384,13 +412,23 @@ const BuyerDeals = () => {
                                         <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
                                             Payment
                                         </p>
+
                                         <p className="mt-1 font-semibold text-gray-900">
                                             {payment?.status || "Not available"}
                                         </p>
                                     </div>
                                 </div>
 
-                                {/* Produce location */}
+                                {/* DOCUMENT DOWNLOAD BUTTONS */}
+                                <div className="mt-5 border-t border-gray-100 pt-5">
+                                    <DocumentDownloadButtons
+                                        id={deal._id}
+                                        type="deal"
+                                        status={deal.status}
+                                    />
+                                </div>
+
+                                {/* PRODUCE LOCATION */}
                                 {deal.produce?.location && (
                                     <div className="mt-5 flex items-center gap-2 text-sm text-gray-500">
                                         <MapPin className="h-4 w-4 text-gray-400" />
@@ -398,7 +436,7 @@ const BuyerDeals = () => {
                                     </div>
                                 )}
 
-                                {/* Buyer message */}
+                                {/* BUYER MESSAGE */}
                                 {deal.message && (
                                     <div className="mt-5 rounded-2xl bg-gray-50 p-4">
                                         <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
@@ -411,7 +449,7 @@ const BuyerDeals = () => {
                                     </div>
                                 )}
 
-                                {/* Existing payment flow */}
+                                {/* EXISTING PAYMENT FLOW */}
                                 {deal.status === "ACCEPTED" && payment && (
                                     <div className="mt-6 border-t border-gray-100 pt-5">
                                         <DealPayment
@@ -423,7 +461,7 @@ const BuyerDeals = () => {
                                     </div>
                                 )}
 
-                                {/* Review farmer after deal completion */}
+                                {/* REVIEW FARMER AFTER DEAL COMPLETION */}
                                 {deal.status === "COMPLETED" && (
                                     <div className="mt-6 border-t border-gray-100 pt-5">
                                         <div className="mb-3 flex items-center gap-2">

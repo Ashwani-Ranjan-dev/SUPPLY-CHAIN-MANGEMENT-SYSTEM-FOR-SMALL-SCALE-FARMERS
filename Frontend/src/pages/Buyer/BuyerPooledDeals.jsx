@@ -11,6 +11,9 @@
 //     AlertCircle,
 //     CreditCard,
 //     LoaderCircle,
+//     Truck,
+//     CalendarDays,
+//     Navigation,
 // } from "lucide-react";
 
 // import { getBuyerPooledDeals } from "../../services/pooledDealServices";
@@ -18,6 +21,12 @@
 //     createPooledPaymentOrder,
 //     verifyPooledPayment,
 // } from "../../services/pooledPaymentServices";
+// import {
+//     createPooledDelivery,
+//     getBuyerPooledDeliveries,
+// } from "../../services/pooledDeliveryServices";
+
+// import DocumentDownloadButtons from "../../components/common/DocumentDownloadButton";
 
 // const statusStyles = {
 //     PENDING: "bg-amber-50 text-amber-700 border-amber-200",
@@ -31,6 +40,15 @@
 //     PENDING: "text-amber-700 bg-amber-50",
 //     ACCEPTED: "text-green-700 bg-green-50",
 //     REJECTED: "text-red-700 bg-red-50",
+// };
+
+// const deliveryStatusStyles = {
+//     NOT_ASSIGNED: "bg-gray-100 text-gray-700",
+//     ASSIGNED: "bg-purple-50 text-purple-700",
+//     PICKED_UP: "bg-amber-50 text-amber-700",
+//     IN_TRANSIT: "bg-blue-50 text-blue-700",
+//     DELIVERED: "bg-green-50 text-green-700",
+//     CANCELLED: "bg-red-50 text-red-700",
 // };
 
 // const formatCurrency = (amount) =>
@@ -52,6 +70,15 @@
 //     const [paymentError, setPaymentError] = useState("");
 //     const [paymentErrorDealId, setPaymentErrorDealId] = useState(null);
 
+//     // Pooled delivery state
+//     const [deliveries, setDeliveries] = useState([]);
+//     const [deliveryLocations, setDeliveryLocations] = useState({});
+//     const [deliveryNotes, setDeliveryNotes] = useState({});
+//     const [creatingDeliveryId, setCreatingDeliveryId] = useState(null);
+//     const [deliveryError, setDeliveryError] = useState("");
+//     const [deliverySuccess, setDeliverySuccess] = useState("");
+//     const [loadingDeliveries, setLoadingDeliveries] = useState(false);
+
 //     // Load buyer's pooled deals
 //     const loadDeals = useCallback(async (isRefresh = false) => {
 //         if (isRefresh) {
@@ -64,8 +91,8 @@
 
 //         try {
 //             const result = await getBuyerPooledDeals();
+//             const data = result?.data ?? result;
 
-//             const data = result.data ?? result;
 //             setDeals(Array.isArray(data) ? data : []);
 //         } catch (err) {
 //             setError(err.message || "Unable to load pooled deals.");
@@ -75,9 +102,57 @@
 //         }
 //     }, []);
 
+//     // Load buyer's pooled deliveries
+//     const loadDeliveries = useCallback(async () => {
+//         setLoadingDeliveries(true);
+
+//         try {
+//             const result = await getBuyerPooledDeliveries();
+//             const data = result?.data ?? result;
+
+//             const deliveryList = Array.isArray(data)
+//                 ? data
+//                 : Array.isArray(data?.deliveries)
+//                   ? data.deliveries
+//                   : [];
+
+//             setDeliveries(deliveryList);
+//             setDeliveryError("");
+
+//             return deliveryList;
+//         } catch (err) {
+//             setDeliveryError(
+//                 err.message || "Unable to load pooled deliveries."
+//             );
+
+//             throw err;
+//         } finally {
+//             setLoadingDeliveries(false);
+//         }
+//     }, []);
+
+//     // Load deals and deliveries on mount
 //     useEffect(() => {
 //         loadDeals();
-//     }, [loadDeals]);
+//         loadDeliveries().catch(() => {});
+//     }, [loadDeals, loadDeliveries]);
+
+//     // Refresh both lists
+//     const refreshPooledData = async () => {
+//         setDeliveryError("");
+//         setDeliverySuccess("");
+
+//         const results = await Promise.allSettled([
+//             loadDeals(true),
+//             loadDeliveries(),
+//         ]);
+
+//         if (results.some((result) => result.status === "rejected")) {
+//             setDeliveryError(
+//                 "Some pooled deal or delivery data could not be refreshed."
+//             );
+//         }
+//     };
 
 //     // Dashboard statistics
 //     const totalOffers = deals.length;
@@ -100,21 +175,22 @@
 //             return;
 //         }
 
-//         if (payingDealId) {
+//         if (payingDealId !== null) {
 //             return;
 //         }
 
 //         setPayingDealId(deal._id);
 //         setPaymentError("");
 //         setPaymentErrorDealId(null);
+//         setDeliveryError("");
+//         setDeliverySuccess("");
 
 //         try {
 //             // Step 1: Create an order on the backend
 //             const orderResult = await createPooledPaymentOrder(deal._id);
+//             const order = orderResult?.data ?? orderResult;
 
-//             const order = orderResult.data ?? orderResult;
-
-//             if (!order.orderId || !order.paymentId || !order.key) {
+//             if (!order?.orderId || !order?.paymentId || !order?.key) {
 //                 throw new Error(
 //                     "The server returned incomplete payment details."
 //                 );
@@ -123,8 +199,28 @@
 //             // Step 2: Load Razorpay Checkout if needed
 //             if (!window.Razorpay) {
 //                 await new Promise((resolve, reject) => {
-//                     const script = document.createElement("script");
+//                     const existingScript = document.querySelector(
+//                         'script[src="https://checkout.razorpay.com/v1/checkout.js"]'
+//                     );
 
+//                     if (existingScript) {
+//                         existingScript.addEventListener("load", resolve, {
+//                             once: true,
+//                         });
+//                         existingScript.addEventListener(
+//                             "error",
+//                             () =>
+//                                 reject(
+//                                     new Error(
+//                                         "Unable to load Razorpay Checkout."
+//                                     )
+//                                 ),
+//                             { once: true }
+//                         );
+//                         return;
+//                     }
+
+//                     const script = document.createElement("script");
 //                     script.src =
 //                         "https://checkout.razorpay.com/v1/checkout.js";
 //                     script.async = true;
@@ -141,7 +237,9 @@
 //             }
 
 //             if (!window.Razorpay) {
-//                 throw new Error("Razorpay Checkout could not be initialized.");
+//                 throw new Error(
+//                     "Razorpay Checkout could not be initialized."
+//                 );
 //             }
 
 //             // Step 3: Open checkout and verify payment on the backend
@@ -182,20 +280,21 @@
 //                                 });
 
 //                             const verified =
-//                                 verificationResult.data ??
+//                                 verificationResult?.data ??
 //                                 verificationResult;
 
 //                             if (
-//                                 verified.success === false ||
-//                                 verified.payment?.status === "FAILED"
+//                                 verified?.success === false ||
+//                                 verified?.payment?.status === "FAILED"
 //                             ) {
 //                                 throw new Error(
-//                                     verified.message ||
+//                                     verified?.message ||
 //                                         "Payment verification failed."
 //                                 );
 //                             }
 
-//                             // Only mark success after server verification
+//                             // The verification endpoint must validate the
+//                             // Razorpay signature on the server.
 //                             setPaymentSuccess((previous) => ({
 //                                 ...previous,
 //                                 [deal._id]: true,
@@ -236,7 +335,10 @@
 //             });
 
 //             // Step 4: Refresh deals after successful verification
-//             await loadDeals(true);
+//             await Promise.all([
+//                 loadDeals(true),
+//                 loadDeliveries().catch(() => []),
+//             ]);
 //         } catch (err) {
 //             setPaymentError(
 //                 err.message || "Unable to complete pooled payment."
@@ -244,6 +346,55 @@
 //             setPaymentErrorDealId(deal._id);
 //         } finally {
 //             setPayingDealId(null);
+//         }
+//     };
+
+//     // Create a pooled delivery
+//     const handleCreateDelivery = async (deal) => {
+//         const deliveryLocation = (
+//             deliveryLocations[deal._id] || ""
+//         ).trim();
+
+//         if (!deliveryLocation) {
+//             setDeliveryError(
+//                 "Enter your complete delivery address before continuing."
+//             );
+//             setDeliverySuccess("");
+//             return;
+//         }
+
+//         if (creatingDeliveryId !== null) return;
+
+//         setCreatingDeliveryId(deal._id);
+//         setDeliveryError("");
+//         setDeliverySuccess("");
+
+//         try {
+//             const result = await createPooledDelivery({
+//                 pooledDealId: deal._id,
+//                 deliveryLocation,
+//                 notes: (deliveryNotes[deal._id] || "").trim(),
+//             });
+
+//             const response = result?.data ?? result;
+
+//             setDeliverySuccess(
+//                 response?.message ||
+//                     result?.message ||
+//                     "Pooled delivery created successfully."
+//             );
+
+//             // Refresh both lists after creating the delivery
+//             await Promise.all([
+//                 loadDeals(true),
+//                 loadDeliveries(),
+//             ]);
+//         } catch (err) {
+//             setDeliveryError(
+//                 err.message || "Unable to create pooled delivery."
+//             );
+//         } finally {
+//             setCreatingDeliveryId(null);
 //         }
 //     };
 
@@ -270,7 +421,6 @@
 //     return (
 //         <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
 //             <div className="mx-auto max-w-7xl space-y-6">
-
 //                 {/* Page heading */}
 //                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 //                     <div>
@@ -283,19 +433,24 @@
 //                         </h1>
 
 //                         <p className="mt-2 text-sm text-gray-500">
-//                             Track your pooled offers and farmer responses.
+//                             Track your pooled offers, farmer responses,
+//                             payments and deliveries.
 //                         </p>
 //                     </div>
 
 //                     <button
 //                         type="button"
-//                         onClick={() => loadDeals(true)}
-//                         disabled={refreshing}
+//                         onClick={refreshPooledData}
+//                         disabled={refreshing || loadingDeliveries}
 //                         className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50 disabled:opacity-60"
 //                     >
 //                         <RefreshCw
 //                             size={16}
-//                             className={refreshing ? "animate-spin" : ""}
+//                             className={
+//                                 refreshing || loadingDeliveries
+//                                     ? "animate-spin"
+//                                     : ""
+//                             }
 //                         />
 //                         Refresh
 //                     </button>
@@ -381,6 +536,36 @@
 
 //                             const contributions = deal.contributions || [];
 
+//                             // Find delivery associated with this deal
+//                             const delivery = deliveries.find((item) => {
+//                                 const linkedDeal =
+//                                     item.pooledDeal &&
+//                                     typeof item.pooledDeal === "object"
+//                                         ? item.pooledDeal._id
+//                                         : item.pooledDeal;
+
+//                                 return (
+//                                     String(linkedDeal) === String(deal._id)
+//                                 );
+//                             });
+
+//                             // Find payment details
+//                             const savedPayment =
+//                                 deal.pooledPayment ||
+//                                 deal.payment ||
+//                                 deal.pooledPaymentId ||
+//                                 null;
+
+//                             const savedPaymentStatus =
+//                                 typeof savedPayment === "object"
+//                                     ? savedPayment?.status
+//                                     : deal.paymentStatus;
+
+//                             const isPaymentPaid =
+//                                 savedPaymentStatus === "PAID" ||
+//                                 savedPaymentStatus === "CAPTURED" ||
+//                                 paymentSuccess[deal._id] === true;
+
 //                             return (
 //                                 <section
 //                                     key={deal._id}
@@ -447,8 +632,8 @@
 //                                         />
 //                                     </div>
 
-//                                     {/* Farmer responses */}
 //                                     <div className="p-5">
+//                                         {/* Farmer responses */}
 //                                         <h3 className="mb-4 text-sm font-bold text-gray-900">
 //                                             Farmer responses
 //                                         </h3>
@@ -543,7 +728,7 @@
 //                                             </div>
 //                                         )}
 
-//                                         {/* Payment errors for this deal */}
+//                                         {/* Payment errors */}
 //                                         {paymentError &&
 //                                             paymentErrorDealId === deal._id && (
 //                                                 <p
@@ -571,9 +756,9 @@
 
 //                                                         <p className="mt-1 text-sm text-amber-700">
 //                                                             Payment becomes
-//                                                             available once all
-//                                                             required farmers
-//                                                             accept.
+//                                                             available once the
+//                                                             pooled deal is
+//                                                             accepted.
 //                                                         </p>
 //                                                     </div>
 //                                                 </div>
@@ -583,27 +768,21 @@
 //                                                 <div className="flex flex-col gap-4 rounded-xl border border-green-200 bg-green-50 p-4 sm:flex-row sm:items-center sm:justify-between">
 //                                                     <div>
 //                                                         <p className="font-semibold text-green-900">
-//                                                             {paymentSuccess[
-//                                                                 deal._id
-//                                                             ]
+//                                                             {isPaymentPaid
 //                                                                 ? "Payment verified successfully"
 //                                                                 : "All farmers have accepted"}
 //                                                         </p>
 
 //                                                         <p className="mt-1 text-sm text-green-800">
-//                                                             {paymentSuccess[
-//                                                                 deal._id
-//                                                             ]
-//                                                                 ? "The server confirmed your payment."
+//                                                             {isPaymentPaid
+//                                                                 ? "Your payment has been confirmed."
 //                                                                 : `Amount due: ${formatCurrency(
 //                                                                       deal.totalAmount
 //                                                                   )}`}
 //                                                         </p>
 //                                                     </div>
 
-//                                                     {!paymentSuccess[
-//                                                         deal._id
-//                                                     ] && (
+//                                                     {!isPaymentPaid && (
 //                                                         <button
 //                                                             type="button"
 //                                                             onClick={() =>
@@ -613,7 +792,7 @@
 //                                                             }
 //                                                             disabled={
 //                                                                 payingDealId !==
-//                                                                     null
+//                                                                 null
 //                                                             }
 //                                                             className="inline-flex items-center justify-center gap-2 rounded-xl bg-green-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-60"
 //                                                         >
@@ -621,9 +800,7 @@
 //                                                             deal._id ? (
 //                                                                 <>
 //                                                                     <LoaderCircle
-//                                                                         size={
-//                                                                             17
-//                                                                         }
+//                                                                         size={17}
 //                                                                         className="animate-spin"
 //                                                                     />
 //                                                                     Processing...
@@ -631,9 +808,7 @@
 //                                                             ) : (
 //                                                                 <>
 //                                                                     <CreditCard
-//                                                                         size={
-//                                                                             17
-//                                                                         }
+//                                                                         size={17}
 //                                                                     />
 //                                                                     Pay Now
 //                                                                 </>
@@ -664,6 +839,338 @@
 //                                                     This pooled deal is
 //                                                     completed.
 //                                                 </div>
+//                                             )}
+//                                         </div>
+
+//                                         {/* Pooled delivery section */}
+//                                         <div className="mt-5 border-t border-gray-100 pt-5">
+//                                             <div className="mb-4 flex items-center gap-2">
+//                                                 <Truck
+//                                                     size={20}
+//                                                     className="text-green-700"
+//                                                 />
+
+//                                                 <h3 className="font-bold text-gray-900">
+//                                                     Pooled Delivery
+//                                                 </h3>
+//                                             </div>
+
+//                                             {deliveryError && (
+//                                                 <div
+//                                                     role="alert"
+//                                                     className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700"
+//                                                 >
+//                                                     {deliveryError}
+//                                                 </div>
+//                                             )}
+
+//                                             {deliverySuccess && (
+//                                                 <div
+//                                                     role="status"
+//                                                     className="mb-4 rounded-xl border border-green-200 bg-green-50 p-3 text-sm text-green-700"
+//                                                 >
+//                                                     {deliverySuccess}
+//                                                 </div>
+//                                             )}
+
+//                                             {delivery ? (
+//                                                 <div className="space-y-4 rounded-xl border border-green-200 bg-green-50/50 p-4">
+//                                                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+//                                                         <div>
+//                                                             <p className="font-semibold text-gray-900">
+//                                                                 Delivery tracking
+//                                                             </p>
+
+//                                                             <p className="mt-1 break-all text-xs text-gray-500">
+//                                                                 Delivery ID:{" "}
+//                                                                 {delivery._id}
+//                                                             </p>
+//                                                         </div>
+
+//                                                         <span
+//                                                             className={`w-fit rounded-full px-3 py-1 text-xs font-semibold ${
+//                                                                 deliveryStatusStyles[
+//                                                                     delivery.status
+//                                                                 ] ||
+//                                                                 "bg-gray-100 text-gray-700"
+//                                                             }`}
+//                                                         >
+//                                                             {(
+//                                                                 delivery.status ||
+//                                                                 "NOT_ASSIGNED"
+//                                                             ).replaceAll(
+//                                                                 "_",
+//                                                                 " "
+//                                                             )}
+//                                                         </span>
+//                                                     </div>
+
+//                                                     <div className="grid gap-4 sm:grid-cols-2">
+//                                                         <div className="flex items-start gap-3">
+//                                                             <MapPin
+//                                                                 size={18}
+//                                                                 className="mt-0.5 shrink-0 text-green-700"
+//                                                             />
+
+//                                                             <div>
+//                                                                 <p className="text-xs text-gray-500">
+//                                                                     Pickup
+//                                                                     location
+//                                                                 </p>
+
+//                                                                 <p className="mt-1 break-words text-sm font-medium text-gray-800">
+//                                                                     {delivery.pickupLocation ||
+//                                                                         "Not available"}
+//                                                                 </p>
+//                                                             </div>
+//                                                         </div>
+
+//                                                         <div className="flex items-start gap-3">
+//                                                             <Navigation
+//                                                                 size={18}
+//                                                                 className="mt-0.5 shrink-0 text-green-700"
+//                                                             />
+
+//                                                             <div>
+//                                                                 <p className="text-xs text-gray-500">
+//                                                                     Delivery
+//                                                                     location
+//                                                                 </p>
+
+//                                                                 <p className="mt-1 break-words text-sm font-medium text-gray-800">
+//                                                                     {delivery.deliveryLocation ||
+//                                                                         "Not available"}
+//                                                                 </p>
+//                                                             </div>
+//                                                         </div>
+//                                                     </div>
+
+//                                                     {delivery.deliveryPartner
+//                                                         ?.name && (
+//                                                         <div className="rounded-lg border border-gray-100 bg-white p-3">
+//                                                             <p className="text-xs text-gray-500">
+//                                                                 Delivery partner
+//                                                             </p>
+
+//                                                             <p className="mt-1 font-semibold text-gray-800">
+//                                                                 {
+//                                                                     delivery
+//                                                                         .deliveryPartner
+//                                                                         .name
+//                                                                 }
+//                                                             </p>
+
+//                                                             {delivery
+//                                                                 .deliveryPartner
+//                                                                 .phone && (
+//                                                                 <p className="mt-1 text-sm text-gray-600">
+//                                                                     {
+//                                                                         delivery
+//                                                                             .deliveryPartner
+//                                                                             .phone
+//                                                                     }
+//                                                                 </p>
+//                                                             )}
+//                                                         </div>
+//                                                     )}
+
+//                                                     {delivery.estimatedDeliveryDate && (
+//                                                         <div className="flex items-center gap-2 text-sm text-gray-700">
+//                                                             <CalendarDays
+//                                                                 size={17}
+//                                                                 className="text-green-700"
+//                                                             />
+
+//                                                             <span>
+//                                                                 Estimated
+//                                                                 delivery:{" "}
+//                                                                 {new Date(
+//                                                                     delivery.estimatedDeliveryDate
+//                                                                 ).toLocaleDateString(
+//                                                                     "en-IN"
+//                                                                 )}
+//                                                             </span>
+//                                                         </div>
+//                                                     )}
+
+//                                                     {delivery.status ===
+//                                                         "DELIVERED" && (
+//                                                         <p className="rounded-lg bg-green-100 p-3 text-sm font-medium text-green-800">
+//                                                             Your pooled produce
+//                                                             has been delivered.
+//                                                         </p>
+//                                                     )}
+
+//                                                     {delivery.status ===
+//                                                         "CANCELLED" && (
+//                                                         <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">
+//                                                             This delivery has
+//                                                             been cancelled.
+//                                                             Contact support for
+//                                                             assistance.
+//                                                         </p>
+//                                                     )}
+
+//                                                     <button
+//                                                         type="button"
+//                                                         onClick={() =>
+//                                                             loadDeliveries().catch(
+//                                                                 () => {}
+//                                                             )
+//                                                         }
+//                                                         disabled={
+//                                                             loadingDeliveries
+//                                                         }
+//                                                         className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-60"
+//                                                     >
+//                                                         <RefreshCw
+//                                                             size={15}
+//                                                             className={
+//                                                                 loadingDeliveries
+//                                                                     ? "animate-spin"
+//                                                                     : ""
+//                                                             }
+//                                                         />
+//                                                         Refresh tracking
+//                                                     </button>
+//                                                 </div>
+//                                             ) : deal.status === "ACCEPTED" &&
+//                                               isPaymentPaid ? (
+//                                                 <div className="space-y-4 rounded-xl border border-green-200 bg-green-50/50 p-4">
+//                                                     <div>
+//                                                         <p className="font-semibold text-green-900">
+//                                                             Payment confirmed
+//                                                         </p>
+
+//                                                         <p className="mt-1 text-sm text-green-800">
+//                                                             Enter your delivery
+//                                                             address to create a
+//                                                             pooled delivery
+//                                                             request.
+//                                                         </p>
+//                                                     </div>
+
+//                                                     <div>
+//                                                         <label
+//                                                             htmlFor={`delivery-location-${deal._id}`}
+//                                                             className="mb-1.5 block text-sm font-medium text-gray-700"
+//                                                         >
+//                                                             Delivery address
+//                                                         </label>
+
+//                                                         <textarea
+//                                                             id={`delivery-location-${deal._id}`}
+//                                                             value={
+//                                                                 deliveryLocations[
+//                                                                     deal._id
+//                                                                 ] || ""
+//                                                             }
+//                                                             onChange={(event) =>
+//                                                                 setDeliveryLocations(
+//                                                                     (previous) => ({
+//                                                                         ...previous,
+//                                                                         [deal._id]:
+//                                                                             event
+//                                                                                 .target
+//                                                                                 .value,
+//                                                                     })
+//                                                                 )
+//                                                             }
+//                                                             rows={2}
+//                                                             maxLength={500}
+//                                                             placeholder="Enter house number, street, village/city, district and PIN code"
+//                                                             className="w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100"
+//                                                         />
+//                                                     </div>
+
+//                                                     <div>
+//                                                         <label
+//                                                             htmlFor={`delivery-notes-${deal._id}`}
+//                                                             className="mb-1.5 block text-sm font-medium text-gray-700"
+//                                                         >
+//                                                             Delivery
+//                                                             instructions
+//                                                             (optional)
+//                                                         </label>
+
+//                                                         <textarea
+//                                                             id={`delivery-notes-${deal._id}`}
+//                                                             value={
+//                                                                 deliveryNotes[
+//                                                                     deal._id
+//                                                                 ] || ""
+//                                                             }
+//                                                             onChange={(event) =>
+//                                                                 setDeliveryNotes(
+//                                                                     (previous) => ({
+//                                                                         ...previous,
+//                                                                         [deal._id]:
+//                                                                             event
+//                                                                                 .target
+//                                                                                 .value,
+//                                                                     })
+//                                                                 )
+//                                                             }
+//                                                             rows={2}
+//                                                             maxLength={1000}
+//                                                             placeholder="Any special delivery instructions?"
+//                                                             className="w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100"
+//                                                         />
+//                                                     </div>
+
+//                                                     <button
+//                                                         type="button"
+//                                                         onClick={() =>
+//                                                             handleCreateDelivery(
+//                                                                 deal
+//                                                             )
+//                                                         }
+//                                                         disabled={
+//                                                             creatingDeliveryId !==
+//                                                             null
+//                                                         }
+//                                                         className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-green-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+//                                                     >
+//                                                         {creatingDeliveryId ===
+//                                                         deal._id ? (
+//                                                             <>
+//                                                                 <LoaderCircle
+//                                                                     size={17}
+//                                                                     className="animate-spin"
+//                                                                 />
+//                                                                 Creating
+//                                                                 delivery...
+//                                                             </>
+//                                                         ) : (
+//                                                             <>
+//                                                                 <Truck
+//                                                                     size={17}
+//                                                                 />
+//                                                                 Create Delivery
+//                                                             </>
+//                                                         )}
+//                                                     </button>
+//                                                 </div>
+//                                             ) : deal.status === "ACCEPTED" ? (
+//                                                 <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+//                                                     <p className="font-semibold text-amber-900">
+//                                                         Payment required
+//                                                     </p>
+
+//                                                     <p className="mt-1 text-sm text-amber-800">
+//                                                         Complete and verify
+//                                                         your payment before
+//                                                         creating a pooled
+//                                                         delivery.
+//                                                     </p>
+//                                                 </div>
+//                                             ) : (
+//                                                 <p className="rounded-xl bg-gray-50 p-4 text-sm text-gray-600">
+//                                                     Delivery becomes available
+//                                                     after the pooled deal is
+//                                                     accepted and payment is
+//                                                     confirmed.
+//                                                 </p>
 //                                             )}
 //                                         </div>
 
@@ -720,7 +1227,6 @@
 
 // export default BuyerPooledDeals;
 
-
 import { useCallback, useEffect, useState } from "react";
 import {
     RefreshCw,
@@ -747,6 +1253,8 @@ import {
     createPooledDelivery,
     getBuyerPooledDeliveries,
 } from "../../services/pooledDeliveryServices";
+
+import DocumentDownloadButtons from "../../components/common/DocumentDownloadButton";
 
 const statusStyles = {
     PENDING: "bg-amber-50 text-amber-700 border-amber-200",
@@ -1893,6 +2401,13 @@ const BuyerPooledDeals = () => {
                                                 </p>
                                             )}
                                         </div>
+
+                                        {/* Document downloads */}
+                                        <DocumentDownloadButtons
+                                            id={deal._id}
+                                            type="pooled"
+                                            status={deal.status}
+                                        />
 
                                         {/* Submission date */}
                                         <p className="mt-4 text-xs text-gray-400">

@@ -1,5 +1,8 @@
 import Payment from "../models/PaymentSchema.js";
 import User from "../models/userSchema.js";
+import {
+    verifyLedgerIntegrity as verifyLedgerIntegrityService,
+} from "../utils/ledgerService.js";
 
 export const getFarmerLedger = async (req, res) => {
     try {
@@ -154,6 +157,38 @@ export const getFarmerLedger = async (req, res) => {
             success: false,
             message:
                 "Unable to load farmer ledger.",
+        });
+    }
+};
+
+export const verifyLedgerIntegrityController = async (req, res) => {
+    try {
+        // The route uses protect middleware, so req.user must be authenticated.
+        const result = await verifyLedgerIntegrityService();
+
+        // Return only integrity information, not other users' transactions.
+        return res.status(200).json({
+            success: true,
+            integrity: {
+                valid: result.valid,
+                checkedEntries: result.checkedEntries,
+                verifiedAt: result.verifiedAt,
+                message: result.message,
+                failure: result.failure
+                    ? {
+                        sequence: result.failure.sequence,
+                        entryId: result.failure.entryId,
+                        reason: result.failure.reason,
+                    }
+                    : null,
+            },
+        });
+    } catch (error) {
+        console.error("Ledger integrity verification error:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Unable to verify ledger integrity.",
         });
     }
 };
