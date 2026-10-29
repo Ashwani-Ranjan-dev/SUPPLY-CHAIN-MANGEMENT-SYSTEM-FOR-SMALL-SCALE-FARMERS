@@ -1,6 +1,7 @@
 import express from "express";
 
 import { protect } from "../middleware/authMiddleware.js";
+import { getFarmerRecommendations } from "../controllers/farmerRecommendationController.js";
 
 import {
     createDeal,
@@ -58,6 +59,13 @@ router.patch(
     "/:id/reject",
     protect,
     rejectDeal
+);
+
+// Farmer compares pending buyer offers
+router.get(
+    "/farmer/recommendations",
+    protect,
+    getFarmerRecommendations
 );
 
 

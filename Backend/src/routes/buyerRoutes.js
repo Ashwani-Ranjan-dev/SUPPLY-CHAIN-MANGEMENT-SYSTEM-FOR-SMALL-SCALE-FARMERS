@@ -1,6 +1,8 @@
 import express from "express";
 
 import { protect } from "../middleware/authMiddleware.js";
+import { getBuyerRecommendations } from "../controllers/buyerRecommendationController.js";
+
 
 import {
     getBuyerDashboard,
@@ -33,5 +35,12 @@ router.put(
     "/profile",
     protect,
     updateBuyerProfile
-)
+);
+
+// BUYER PRODUCE RECOMMENDATIONS
+router.get(
+    "/recommendations",
+    protect,
+    getBuyerRecommendations
+);
 export default router;

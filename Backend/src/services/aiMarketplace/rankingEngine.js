@@ -467,7 +467,7 @@ export function rankProduceListings(
         if (
             criteria.location &&
             normalizeText(listing.location) !==
-                normalizeText(criteria.location)
+            normalizeText(criteria.location)
         ) {
             return false;
         }
@@ -597,16 +597,19 @@ export function rankBuyerOffers(offers, options = {}) {
         UNIT_TO_KG[String(offer.unit ?? "").toUpperCase()]
     );
 
-    const prices = eligible.map((offer) => offer.offeredPrice);
+    const pricesPerKg = eligible.map((offer) =>
+        Number(offer.offeredPrice) /
+        UNIT_TO_KG[String(offer.unit).toUpperCase()]
+    );
 
     return eligible.map((offer) => {
         const factors = {
             price: minMaxScore(
-                offer.offeredPrice,
-                prices,
+                Number(offer.offeredPrice) /
+                UNIT_TO_KG[String(offer.unit).toUpperCase()],
+                pricesPerKg,
                 { higherIsBetter: true }
             ),
-
             // The Deal model does not establish produce quality.
             quality: null,
 
@@ -644,7 +647,7 @@ export function rankBuyerOffers(offers, options = {}) {
 
             distance:
                 finiteNumber(offer.distanceKm) &&
-                Number(offer.distanceKm) >= 0
+                    Number(offer.distanceKm) >= 0
                     ? distanceScore(offer.distanceKm)
                     : null,
         };
