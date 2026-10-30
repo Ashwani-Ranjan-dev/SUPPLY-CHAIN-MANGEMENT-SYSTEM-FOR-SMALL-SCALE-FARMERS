@@ -9,6 +9,10 @@ import {
     UNIT_TO_KG,
 } from "../services/aiMarketplace/rankingEngine.js";
 
+import {
+    explainBuyerRecommendationWithFallback,
+} from "../services/aiMarketplace/explanationOrchestrator.js";
+
 const MAX_LISTINGS_TO_COMPARE = 200;
 const MAX_RESULTS = 50;
 
@@ -35,6 +39,10 @@ const isValidNonNegativeNumber = (value) =>
     Number.isFinite(Number(value)) &&
     Number(value) >= 0;
 
+// Escape user input before using it in a regular expression.
+const escapeRegex = (value) =>
+    value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
 // GET /api/buyer/recommendations
 export const getBuyerRecommendations = async (req, res) => {
     try {
@@ -47,7 +55,7 @@ export const getBuyerRecommendations = async (req, res) => {
             });
         }
 
-        // 2. Read and validate query parameters
+        // 2. Read query parameters
         const {
             crop,
             quantity,
@@ -74,6 +82,7 @@ export const getBuyerRecommendations = async (req, res) => {
             ? preferredQuality.trim().toUpperCase()
             : "";
 
+        // Validate crop
         if (crop !== undefined && !cleanCrop) {
             return res.status(400).json({
                 success: false,
@@ -81,6 +90,7 @@ export const getBuyerRecommendations = async (req, res) => {
             });
         }
 
+        // Validate location
         if (location !== undefined && !cleanLocation) {
             return res.status(400).json({
                 success: false,
@@ -88,6 +98,7 @@ export const getBuyerRecommendations = async (req, res) => {
             });
         }
 
+        // Validate quantity
         if (
             quantity !== undefined &&
             !isValidPositiveNumber(quantity)
@@ -98,6 +109,7 @@ export const getBuyerRecommendations = async (req, res) => {
             });
         }
 
+        // Validate maximum price
         if (
             maxPricePerUnit !== undefined &&
             !isValidNonNegativeNumber(maxPricePerUnit)
@@ -109,9 +121,7 @@ export const getBuyerRecommendations = async (req, res) => {
             });
         }
 
-        // NEW: A budget must include a valid unit.
-        // This ensures the price comparison uses a clear unit
-        // such as INR per KG, QUINTAL, or TON.
+        // A maximum price must have a valid unit.
         if (
             maxPricePerUnit !== undefined &&
             !ALLOWED_UNITS.has(cleanUnit)
@@ -123,6 +133,7 @@ export const getBuyerRecommendations = async (req, res) => {
             });
         }
 
+        // Validate unit
         if (
             unit !== undefined &&
             !ALLOWED_UNITS.has(cleanUnit)
@@ -133,6 +144,7 @@ export const getBuyerRecommendations = async (req, res) => {
             });
         }
 
+        // Validate preferred quality
         if (
             preferredQuality !== undefined &&
             !ALLOWED_QUALITIES.has(cleanQuality)
@@ -144,6 +156,7 @@ export const getBuyerRecommendations = async (req, res) => {
             });
         }
 
+        // Validate result limit
         const requestedLimit =
             limit === undefined ? 10 : Number(limit);
 
@@ -154,28 +167,26 @@ export const getBuyerRecommendations = async (req, res) => {
         ) {
             return res.status(400).json({
                 success: false,
-                message: `limit must be an integer from 1 to ${MAX_RESULTS}.`,
+                message:
+                    `limit must be an integer from 1 to ${MAX_RESULTS}.`,
             });
         }
 
-        // 3. Fetch active listings only.
-        // Keep the database query bounded even if the marketplace grows.
+        // 3. Fetch active produce listings
         const filter = {
             status: "ACTIVE",
         };
 
         if (cleanCrop) {
-            // Case-insensitive exact crop match;
-            // escape user input to prevent regex injection.
             filter.crop = new RegExp(
-                `^${cleanCrop.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`,
+                `^${escapeRegex(cleanCrop)}$`,
                 "i"
             );
         }
 
         if (cleanLocation) {
             filter.location = new RegExp(
-                `^${cleanLocation.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`,
+                `^${escapeRegex(cleanLocation)}$`,
                 "i"
             );
         }
@@ -189,14 +200,14 @@ export const getBuyerRecommendations = async (req, res) => {
             .limit(MAX_LISTINGS_TO_COMPARE)
             .lean();
 
-        // Remove records whose farmer is missing or is not a FARMER.
+        // Exclude listings with missing or invalid farmer records.
         const validListings = listings.filter(
             (listing) =>
                 listing.farmer &&
                 listing.farmer.role === "FARMER"
         );
 
-        // 4. Aggregate ratings for the farmers in this candidate set.
+        // 4. Aggregate ratings for candidate farmers
         const farmerIds = [
             ...new Set(
                 validListings.map((listing) =>
@@ -207,23 +218,24 @@ export const getBuyerRecommendations = async (req, res) => {
 
         const ratingRows = farmerIds.length
             ? await Review.aggregate([
-                {
-                    $match: {
-                        recipient: {
-                            $in: farmerIds.map(
-                                (id) => new mongoose.Types.ObjectId(id)
-                            ),
-                        },
-                    },
-                },
-                {
-                    $group: {
-                        _id: "$recipient",
-                        averageRating: { $avg: "$rating" },
-                        reviewCount: { $sum: 1 },
-                    },
-                },
-            ])
+                  {
+                      $match: {
+                          recipient: {
+                              $in: farmerIds.map(
+                                  (id) =>
+                                      new mongoose.Types.ObjectId(id)
+                              ),
+                          },
+                      },
+                  },
+                  {
+                      $group: {
+                          _id: "$recipient",
+                          averageRating: { $avg: "$rating" },
+                          reviewCount: { $sum: 1 },
+                      },
+                  },
+              ])
             : [];
 
         const ratingsByFarmer = new Map(
@@ -238,7 +250,7 @@ export const getBuyerRecommendations = async (req, res) => {
             ])
         );
 
-        // 5. Prepare ranking inputs using actual model fields.
+        // 5. Prepare ranking inputs
         const rankingListings = validListings.map((listing) => {
             const rating = ratingsByFarmer.get(
                 String(listing.farmer._id)
@@ -252,23 +264,26 @@ export const getBuyerRecommendations = async (req, res) => {
             };
         });
 
-        // 6. Rank using the deterministic Phase 2 service.
-        const ranked = rankProduceListings(
+        // 6. Rank listings using the existing deterministic engine
+        const rankedResults = rankProduceListings(
             rankingListings,
             {
-                ...(cleanCrop ? { crop: cleanCrop } : {}),
+                ...(cleanCrop
+                    ? { crop: cleanCrop }
+                    : {}),
 
                 ...(quantity !== undefined
                     ? {
-                        quantity: Number(quantity),
-                        unit: cleanUnit,
-                    }
+                          quantity: Number(quantity),
+                          unit: cleanUnit,
+                      }
                     : {}),
 
                 ...(maxPricePerUnit !== undefined
                     ? {
-                        maxPricePerUnit: Number(maxPricePerUnit),
-                    }
+                          maxPricePerUnit:
+                              Number(maxPricePerUnit),
+                      }
                     : {}),
 
                 ...(cleanQuality
@@ -281,7 +296,8 @@ export const getBuyerRecommendations = async (req, res) => {
             }
         );
 
-        // 7. Add public seller details without exposing phone numbers.
+        // 7. Map ranked listings and generate explanations.
+        // Promise.all allows explanation requests to run concurrently.
         const listingById = new Map(
             validListings.map((listing) => [
                 String(listing._id),
@@ -289,27 +305,50 @@ export const getBuyerRecommendations = async (req, res) => {
             ])
         );
 
-        const recommendations = ranked
-            .slice(0, requestedLimit)
-            .map((result, index) => {
-                const listing = listingById.get(
-                    result.listingId
-                );
+        const recommendations = await Promise.all(
+            rankedResults
+                .slice(0, requestedLimit)
+                .map(async (result, index) => {
+                    const listing = listingById.get(
+                        String(result.listingId)
+                    );
 
-                return {
-                    rank: index + 1,
-                    ...result,
+                    const explanation =
+                        await explainBuyerRecommendationWithFallback({
+                            ...result,
+                            crop: result.crop,
+                            quality: result.quality,
+                            expectedPrice: result.expectedPrice,
+                            unit: result.unit,
+                            reasons: result.reasons,
+                            scoreBreakdown: result.scoreBreakdown,
+                            availableWeightPercent:
+                                result.availableWeightPercent,
+                            confidence: result.confidence,
+                            limitations: result.limitations,
+                        });
 
-                    farmer: listing
-                        ? {
-                            id: String(listing.farmer._id),
-                            name: listing.farmer.name,
-                            village: listing.farmer.village,
-                        }
-                        : null,
-                };
-            });
+                    return {
+                        rank: index + 1,
+                        ...result,
 
+                        // Explanation comes from the orchestrator.
+                        explanation,
+
+                        // Expose public seller details only.
+                        // Never return the seller's phone number.
+                        farmer: listing
+                            ? {
+                                  id: String(listing.farmer._id),
+                                  name: listing.farmer.name,
+                                  village: listing.farmer.village,
+                              }
+                            : null,
+                    };
+                })
+        );
+
+        // 8. Return recommendations
         return res.status(200).json({
             success: true,
 
