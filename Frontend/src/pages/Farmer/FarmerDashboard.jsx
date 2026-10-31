@@ -1,11 +1,8 @@
-
 import { useCallback, useEffect, useState } from "react";
 
 import {
     MapPin,
-    Search,
     Handshake,
-    Clock3,
     CheckCircle2,
     RefreshCw,
     ArrowRight,
@@ -21,6 +18,10 @@ import {
     UserRound,
     ShoppingBasket,
     CircleAlert,
+    Wallet,
+    CalendarDays,
+    CreditCard,
+    Clock3,
 } from "lucide-react";
 
 import { Link, useNavigate } from "react-router-dom";
@@ -30,13 +31,10 @@ import { useAuth } from "../../context/AuthContext";
 import FarmerSidebar from "../../components/Farmer/farmerSideBar";
 import FarmerHeader from "../../components/Farmer/FarmerHeader";
 
-import DashboardStatCard from "../../components/Farmer/DashboardStatCard";
 import MarketPriceCard from "../../components/Farmer/MarketPriceCard";
-import QuickActionCard from "../../components/Farmer/QuickActionCard";
 
 import { getFarmerDashboard } from "../../services/farmerServices.js";
 import { getMarketPrice } from "../../services/MarketPriceServices.js";
-
 
 const FarmerDashboard = () => {
     const navigate = useNavigate();
@@ -67,7 +65,6 @@ const FarmerDashboard = () => {
         maximumFractionDigits: 0,
     }).format(Number(stats.totalEarnings ?? 0));
 
-
     // DASHBOARD STATISTICS
 
     const fetchDashboardStatistics = useCallback(async () => {
@@ -90,7 +87,6 @@ const FarmerDashboard = () => {
             setLoading(false);
         }
     }, []);
-
 
     // MARKET PRICES
 
@@ -120,7 +116,6 @@ const FarmerDashboard = () => {
         }
     }, []);
 
-
     // INITIAL LOAD AND REFRESH
 
     useEffect(() => {
@@ -132,11 +127,9 @@ const FarmerDashboard = () => {
         refreshKey,
     ]);
 
-
     const handleRefresh = () => {
         setRefreshKey((previous) => previous + 1);
     };
-
 
     // STATISTICS CONFIGURATION
 
@@ -179,9 +172,10 @@ const FarmerDashboard = () => {
         },
     ];
 
-
     return (
         <div className="farmer-dashboard flex min-h-screen bg-[#f5f8f3]">
+
+            {/* GLOBAL ANIMATIONS */}
 
             <style>{`
                 @keyframes farmerFadeUp {
@@ -213,12 +207,52 @@ const FarmerDashboard = () => {
                     }
                 }
 
-                .farmer-animate {
-                    animation: farmerFadeUp 0.65s ease-out both;
+                @keyframes dashboardReveal {
+                    from {
+                        opacity: 0;
+                        transform: translateY(28px) scale(.985);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0) scale(1);
+                    }
                 }
 
-                .farmer-float {
-                    animation: farmerFloat 5s ease-in-out infinite;
+                @keyframes dashboardGlow {
+                    0%, 100% {
+                        opacity: .35;
+                        transform: scale(1);
+                    }
+                    50% {
+                        opacity: .7;
+                        transform: scale(1.12);
+                    }
+                }
+
+                @keyframes dashboardPulse {
+                    0%, 100% {
+                        box-shadow: 0 0 0 0 rgba(134,239,172,.3);
+                    }
+                    50% {
+                        box-shadow: 0 0 0 10px rgba(134,239,172,0);
+                    }
+                }
+
+                .farmer-animate {
+                    animation: farmerFadeUp .65s ease-out both;
+                }
+
+                .dashboard-reveal {
+                    animation: dashboardReveal .7s cubic-bezier(.2,.7,.2,1) both;
+                }
+
+                .farmer-float,
+                .dashboard-float {
+                    animation: farmerFloat 6s ease-in-out infinite;
+                }
+
+                .dashboard-glow {
+                    animation: dashboardGlow 5s ease-in-out infinite;
                 }
 
                 .farmer-stat-card {
@@ -226,15 +260,15 @@ const FarmerDashboard = () => {
                     isolation: isolate;
                     overflow: hidden;
                     transition:
-                        transform 0.3s ease,
-                        box-shadow 0.3s ease,
-                        border-color 0.3s ease;
+                        transform .35s ease,
+                        box-shadow .35s ease,
+                        border-color .35s ease;
                 }
 
                 .farmer-stat-card:hover {
-                    transform: translateY(-6px);
-                    box-shadow: 0 18px 38px rgba(24, 72, 39, 0.10);
-                    border-color: #cce7cf;
+                    transform: translateY(-7px);
+                    box-shadow: 0 20px 45px rgba(22,101,52,.11);
+                    border-color: #bbf7d0;
                 }
 
                 .farmer-stat-card::after {
@@ -247,10 +281,10 @@ const FarmerDashboard = () => {
                     background: linear-gradient(
                         110deg,
                         transparent,
-                        rgba(255,255,255,0.45),
+                        rgba(255,255,255,.5),
                         transparent
                     );
-                    transition: left 0.65s ease;
+                    transition: left .65s ease;
                     pointer-events: none;
                     z-index: -1;
                 }
@@ -259,33 +293,40 @@ const FarmerDashboard = () => {
                     left: 140%;
                 }
 
+                .dashboard-premium-card,
                 .farmer-action-card {
                     transition:
-                        transform 0.3s ease,
-                        box-shadow 0.3s ease,
-                        border-color 0.3s ease;
+                        transform .35s cubic-bezier(.2,.7,.2,1),
+                        box-shadow .35s ease,
+                        border-color .35s ease;
                 }
 
+                .dashboard-premium-card:hover,
                 .farmer-action-card:hover {
-                    transform: translateY(-5px);
-                    box-shadow: 0 20px 42px rgba(24, 72, 39, 0.10);
+                    transform: translateY(-6px);
+                    box-shadow: 0 20px 42px rgba(24,72,39,.10);
                     border-color: #b8dfbd;
                 }
 
+                .dashboard-icon,
                 .farmer-icon-box {
                     transition:
-                        transform 0.3s ease,
-                        border-radius 0.3s ease;
+                        transform .35s ease,
+                        box-shadow .35s ease,
+                        border-radius .35s ease;
                 }
 
+                .dashboard-premium-card:hover .dashboard-icon,
+                .dashboard-premium-card:hover .farmer-icon-box,
+                .farmer-action-card:hover .dashboard-icon,
                 .farmer-action-card:hover .farmer-icon-box {
-                    transform: rotate(-6deg) scale(1.08);
+                    transform: rotate(-7deg) scale(1.1);
                     border-radius: 18px;
                 }
 
                 .farmer-hero-pattern {
                     background-image: radial-gradient(
-                        rgba(255,255,255,0.13) 1px,
+                        rgba(255,255,255,.15) 1px,
                         transparent 1px
                     );
                     background-size: 23px 23px;
@@ -302,18 +343,43 @@ const FarmerDashboard = () => {
                     animation: farmerShimmer 1.5s infinite linear;
                 }
 
+                .dashboard-glass {
+                    background: rgba(255,255,255,.12);
+                    backdrop-filter: blur(14px);
+                    border: 1px solid rgba(255,255,255,.2);
+                }
+
+                .dashboard-link {
+                    position: relative;
+                    transition: color .25s ease;
+                }
+
+                .dashboard-link::after {
+                    content: "";
+                    position: absolute;
+                    bottom: -4px;
+                    left: 0;
+                    width: 0;
+                    height: 2px;
+                    background: currentColor;
+                    transition: width .3s ease;
+                }
+
+                .dashboard-link:hover::after {
+                    width: 100%;
+                }
+
                 @media (prefers-reduced-motion: reduce) {
                     .farmer-dashboard *,
                     .farmer-dashboard *::before,
                     .farmer-dashboard *::after {
-                        animation-duration: 0.01ms !important;
+                        animation-duration: .01ms !important;
                         animation-iteration-count: 1 !important;
-                        transition-duration: 0.01ms !important;
+                        transition-duration: .01ms !important;
                         scroll-behavior: auto !important;
                     }
                 }
             `}</style>
-
 
             {/* FARMER SIDEBAR */}
 
@@ -321,7 +387,6 @@ const FarmerDashboard = () => {
                 mobileOpen={mobileOpen}
                 setMobileOpen={setMobileOpen}
             />
-
 
             {/* MAIN CONTENT */}
 
@@ -332,7 +397,6 @@ const FarmerDashboard = () => {
                 <main className="min-w-0 flex-1 overflow-x-hidden px-4 py-6 sm:px-7 lg:px-8 lg:py-9">
 
                     <div className="mx-auto max-w-7xl">
-
 
                         {/* HEADER */}
 
@@ -387,11 +451,8 @@ const FarmerDashboard = () => {
                                         </span>
 
                                     </div>
-
                                 </div>
-
                             </div>
-
 
                             <div className="flex items-center gap-3 self-start sm:self-center">
 
@@ -421,26 +482,28 @@ const FarmerDashboard = () => {
                             </div>
                         </header>
 
-
                         {/* HERO BANNER */}
 
                         <section
-                            className="farmer-animate relative isolate overflow-hidden rounded-[30px] bg-gradient-to-br from-[#14532d] via-[#166534] to-[#15803d] p-6 text-white shadow-xl shadow-green-900/10 sm:p-9 lg:p-11"
+                            className="dashboard-reveal relative isolate overflow-hidden rounded-[32px] bg-gradient-to-br from-[#064e2b] via-[#166534] to-[#15803d] p-6 text-white shadow-2xl shadow-green-900/15 sm:p-9 lg:p-12"
                             style={{ animationDelay: "120ms" }}
                         >
 
                             <div className="farmer-hero-pattern pointer-events-none absolute inset-0 -z-10 opacity-60" />
 
-                            <div className="pointer-events-none absolute -right-16 -top-24 -z-10 h-72 w-72 rounded-full bg-lime-300/15 blur-3xl" />
+                            <div className="pointer-events-none absolute -right-20 -top-24 h-80 w-80 rounded-full bg-lime-300/20 blur-3xl dashboard-glow" />
 
-                            <div className="pointer-events-none absolute -bottom-24 right-1/4 -z-10 h-64 w-64 rounded-full bg-emerald-300/10 blur-3xl" />
+                            <div className="pointer-events-none absolute -bottom-32 left-1/3 h-72 w-72 rounded-full bg-emerald-300/20 blur-3xl dashboard-glow" />
 
+                            <div className="pointer-events-none absolute right-1/4 top-8 h-3 w-3 rounded-full bg-lime-200 dashboard-float" />
+
+                            <div className="pointer-events-none absolute -bottom-20 right-1/4 h-64 w-64 rounded-full bg-green-300/10 blur-3xl" />
 
                             <div className="relative grid items-center gap-8 lg:grid-cols-[1fr_auto]">
 
                                 <div className="max-w-2xl">
 
-                                    <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-2 text-xs font-semibold tracking-wide text-green-50 backdrop-blur-md">
+                                    <div className="dashboard-glass inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-xs font-semibold tracking-wide text-green-50">
                                         <Sparkles size={14} />
 
                                         {isSmallFarmer
@@ -448,11 +511,11 @@ const FarmerDashboard = () => {
                                             : "YOUR FARMER DASHBOARD"}
                                     </div>
 
-                                    <h2 className="mt-5 text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl lg:text-5xl">
+                                    <h2 className="mt-5 text-3xl font-black leading-tight tracking-tight sm:text-4xl lg:text-5xl">
                                         Grow your produce.
                                         <br />
 
-                                        <span className="text-lime-300">
+                                        <span className="bg-gradient-to-r from-lime-200 via-lime-300 to-emerald-200 bg-clip-text text-transparent">
                                             Grow your opportunities.
                                         </span>
                                     </h2>
@@ -469,9 +532,7 @@ const FarmerDashboard = () => {
                                         <button
                                             type="button"
                                             onClick={() =>
-                                                navigate(
-                                                    "/farmer/produce/new"
-                                                )
+                                                navigate("/farmer/produce/new")
                                             }
                                             className="group inline-flex items-center gap-2.5 rounded-xl bg-white px-5 py-3.5 text-sm font-bold text-green-800 shadow-lg transition duration-300 hover:-translate-y-1 hover:bg-lime-50 hover:shadow-xl"
                                         >
@@ -488,14 +549,11 @@ const FarmerDashboard = () => {
                                         <button
                                             type="button"
                                             onClick={() =>
-                                                navigate(
-                                                    "/farmer/deals"
-                                                )
+                                                navigate("/farmer/deals")
                                             }
                                             className="inline-flex items-center gap-2 rounded-xl border border-white/25 bg-white/10 px-5 py-3.5 text-sm font-bold text-white backdrop-blur-md transition duration-300 hover:-translate-y-1 hover:bg-white/20"
                                         >
                                             <Handshake size={17} />
-
                                             Manage Deals
                                         </button>
 
@@ -523,10 +581,9 @@ const FarmerDashboard = () => {
 
                                 </div>
 
+                                {/* HERO ART */}
 
-                                {/* DECORATIVE HERO ART */}
-
-                                <div className="farmer-float relative hidden h-52 w-52 items-center justify-center lg:flex xl:h-60 xl:w-60">
+                                <div className="farmer-float relative mx-auto hidden h-52 w-52 items-center justify-center lg:flex xl:h-60 xl:w-60">
 
                                     <div className="absolute inset-0 rounded-full border border-white/15" />
 
@@ -556,7 +613,6 @@ const FarmerDashboard = () => {
                             </div>
 
                         </section>
-
 
                         {/* DASHBOARD ERROR */}
 
@@ -593,7 +649,6 @@ const FarmerDashboard = () => {
                             </section>
                         )}
 
-
                         {/* STATISTICS SECTION */}
 
                         <section className="mt-9">
@@ -625,16 +680,12 @@ const FarmerDashboard = () => {
                                 >
                                     <RefreshCw
                                         size={15}
-                                        className={
-                                            loading ? "animate-spin" : ""
-                                        }
+                                        className={loading ? "animate-spin" : ""}
                                     />
-
                                     Refresh statistics
                                 </button>
 
                             </div>
-
 
                             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
 
@@ -644,21 +695,19 @@ const FarmerDashboard = () => {
                                     return (
                                         <div
                                             key={stat.title}
-                                            className="farmer-stat-card farmer-animate rounded-3xl border border-gray-100 bg-white p-5 shadow-sm sm:p-6"
+                                            className="farmer-stat-card dashboard-reveal rounded-3xl border border-gray-100 bg-white p-5 shadow-sm sm:p-6"
                                             style={{
-                                                animationDelay: `${
-                                                    230 + index * 100
-                                                }ms`,
+                                                animationDelay: `${230 + index * 100}ms`,
                                             }}
                                         >
 
                                             <div className="flex items-start justify-between gap-3">
 
                                                 <div
-                                                    className={`flex h-12 w-12 items-center justify-center rounded-2xl ${stat.iconBg} ${stat.iconColor}`}
+                                                    className={`dashboard-icon flex h-14 w-14 items-center justify-center rounded-2xl ${stat.iconBg} ${stat.iconColor}`}
                                                 >
                                                     <Icon
-                                                        size={23}
+                                                        size={25}
                                                         strokeWidth={1.8}
                                                     />
                                                 </div>
@@ -674,9 +723,12 @@ const FarmerDashboard = () => {
                                             </p>
 
                                             {loading ? (
-                                                <div className="farmer-skeleton mt-3 h-10 w-24 rounded-lg" />
+                                                <div className="farmer-skeleton mt-3 h-10 w-28 rounded-lg" />
                                             ) : (
-                                                <p className="mt-1 break-words text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl">
+                                                <p
+                                                    key={`${stat.title}-${stat.value}`}
+                                                    className="mt-1 break-words text-3xl font-black tracking-tight text-gray-900 sm:text-4xl dashboard-reveal"
+                                                >
                                                     {stat.value}
                                                 </p>
                                             )}
@@ -690,7 +742,7 @@ const FarmerDashboard = () => {
                                                     className={`h-full w-1/2 rounded-full ${stat.accent} transition-all duration-700`}
                                                     style={{
                                                         transform: loading
-                                                            ? "scaleX(0.25)"
+                                                            ? "scaleX(.25)"
                                                             : "scaleX(1)",
                                                         transformOrigin: "left",
                                                     }}
@@ -704,7 +756,6 @@ const FarmerDashboard = () => {
                             </div>
 
                         </section>
-
 
                         {/* MARKET PRICES AND PROFILE */}
 
@@ -727,18 +778,18 @@ const FarmerDashboard = () => {
                                 </p>
                             </div>
 
-
                             <div className="grid min-w-0 gap-5 xl:grid-cols-3">
-
 
                                 {/* MARKET PRICES */}
 
                                 <section
-                                    className="farmer-animate min-w-0 overflow-hidden rounded-3xl border border-gray-100 bg-white p-5 shadow-sm sm:p-6 xl:col-span-2"
+                                    className="dashboard-premium-card farmer-animate relative min-w-0 overflow-hidden rounded-3xl border border-gray-100 bg-white p-5 shadow-sm sm:p-6 xl:col-span-2"
                                     style={{ animationDelay: "630ms" }}
                                 >
 
-                                    <div className="mb-6 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+                                    <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-green-50 blur-3xl" />
+
+                                    <div className="relative mb-6 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
 
                                         <div>
                                             <p className="text-xs font-bold uppercase tracking-[0.16em] text-green-700">
@@ -757,9 +808,7 @@ const FarmerDashboard = () => {
                                         <button
                                             type="button"
                                             onClick={() =>
-                                                navigate(
-                                                    "/farmer/market-prices"
-                                                )
+                                                navigate("/farmer/market-prices")
                                             }
                                             className="group inline-flex shrink-0 items-center gap-2 self-start text-sm font-bold text-green-700 transition hover:text-green-900 sm:self-center"
                                         >
@@ -773,7 +822,6 @@ const FarmerDashboard = () => {
 
                                     </div>
 
-
                                     {marketPricesLoading ? (
                                         <div className="grid gap-4 md:grid-cols-3">
                                             {[1, 2, 3].map((item) => (
@@ -784,18 +832,24 @@ const FarmerDashboard = () => {
                                             ))}
                                         </div>
                                     ) : marketPrices.length > 0 ? (
-                                        <div className="grid min-w-0 gap-4 md:grid-cols-2 xl:grid-cols-3">
-                                            {marketPrices.map((price) => (
-                                                <MarketPriceCard
-                                                    key={
-                                                        price._id ||
-                                                        price.crop
-                                                    }
-                                                    crop={price.crop}
-                                                    price={price.modalPrice}
-                                                    unit={price.unit}
-                                                />
+                                        <div className="grid min-w-0 gap-5 md:grid-cols-2 xl:grid-cols-3">
+
+                                            {marketPrices.map((price, index) => (
+                                                <div
+                                                    key={price._id || price.crop}
+                                                    className="dashboard-reveal"
+                                                    style={{
+                                                        animationDelay: `${index * 100}ms`,
+                                                    }}
+                                                >
+                                                    <MarketPriceCard
+                                                        crop={price.crop}
+                                                        price={price.modalPrice}
+                                                        unit={price.unit}
+                                                    />
+                                                </div>
                                             ))}
+
                                         </div>
                                     ) : (
                                         <div className="flex min-h-48 flex-col items-center justify-center rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-4 text-center">
@@ -821,7 +875,10 @@ const FarmerDashboard = () => {
                                                 disabled={marketPricesLoading}
                                                 className="mt-4 inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-green-800 transition hover:border-green-200 hover:bg-green-50 disabled:opacity-60"
                                             >
-                                                <RefreshCw size={15} />
+                                                <RefreshCw
+                                                    size={15}
+                                                    className={marketPricesLoading ? "animate-spin" : ""}
+                                                />
                                                 Retry prices
                                             </button>
 
@@ -830,124 +887,124 @@ const FarmerDashboard = () => {
 
                                 </section>
 
-
                                 {/* FARMER PROFILE */}
 
                                 <section
-                                    className="farmer-animate min-w-0 rounded-3xl border border-gray-100 bg-white p-5 shadow-sm sm:p-6"
+                                    className="dashboard-premium-card farmer-animate relative isolate min-w-0 overflow-hidden rounded-3xl border border-gray-100 bg-white p-5 shadow-sm sm:p-6"
                                     style={{ animationDelay: "730ms" }}
                                 >
 
-                                    <div className="flex items-center justify-between gap-3">
+                                    <div className="pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full bg-green-100/60 blur-3xl" />
 
-                                        <div>
-                                            <p className="text-xs font-bold uppercase tracking-[0.16em] text-green-700">
-                                                Account
-                                            </p>
+                                    <div className="relative">
 
-                                            <h3 className="mt-2 text-xl font-extrabold text-gray-900">
-                                                My Profile
-                                            </h3>
+                                        <div className="flex items-center justify-between gap-3">
+
+                                            <div>
+                                                <p className="text-xs font-bold uppercase tracking-[0.16em] text-green-700">
+                                                    Account
+                                                </p>
+
+                                                <h3 className="mt-2 text-xl font-extrabold text-gray-900">
+                                                    My Profile
+                                                </h3>
+                                            </div>
+
+                                            <div className="dashboard-icon flex h-11 w-11 items-center justify-center rounded-2xl bg-green-100 text-green-700">
+                                                <UserRound size={23} />
+                                            </div>
+
                                         </div>
 
-                                        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-green-100 text-green-700">
-                                            <UserRound size={23} />
+                                        <div className="mt-6 flex items-center gap-3">
+
+                                            <div className="dashboard-icon flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-green-500 to-emerald-700 text-xl font-extrabold text-white shadow-md shadow-green-100">
+                                                {user?.name
+                                                    ?.trim()
+                                                    ?.charAt(0)
+                                                    ?.toUpperCase() || "F"}
+                                            </div>
+
+                                            <div className="min-w-0">
+                                                <h4 className="truncate font-extrabold text-gray-900">
+                                                    {user?.name || "Farmer"}
+                                                </h4>
+
+                                                <p className="mt-1 flex items-center gap-1.5 truncate text-sm text-gray-500">
+                                                    <MapPin
+                                                        size={14}
+                                                        className="shrink-0 text-green-600"
+                                                    />
+
+                                                    {user?.village ||
+                                                        "Location not specified"}
+                                                </p>
+                                            </div>
+
                                         </div>
+
+                                        <div className="mt-6 space-y-3 border-t border-gray-100 pt-5">
+
+                                            <div className="rounded-xl bg-gray-50 p-3.5 transition hover:bg-green-50">
+                                                <p className="text-xs font-medium text-gray-500">
+                                                    Farmer Type
+                                                </p>
+
+                                                <p className="mt-1.5 text-sm font-bold text-gray-900">
+                                                    {isSmallFarmer
+                                                        ? "Small / Marginal Farmer"
+                                                        : user?.farmerType === "LARGE"
+                                                            ? "Large Farmer / FPO"
+                                                            : "Not specified"}
+                                                </p>
+                                            </div>
+
+                                            <div className="rounded-xl bg-gray-50 p-3.5 transition hover:bg-green-50">
+                                                <p className="text-xs font-medium text-gray-500">
+                                                    Produce Interest
+                                                </p>
+
+                                                <p className="mt-1.5 break-words text-sm font-bold text-gray-900">
+                                                    {user?.produceInterest ||
+                                                        "Not specified"}
+                                                </p>
+                                            </div>
+
+                                            <div className="rounded-xl bg-gray-50 p-3.5 transition hover:bg-green-50">
+                                                <p className="text-xs font-medium text-gray-500">
+                                                    Mobile Number
+                                                </p>
+
+                                                <p className="mt-1.5 break-words text-sm font-bold text-gray-900">
+                                                    {user?.phone ||
+                                                        "Not specified"}
+                                                </p>
+                                            </div>
+
+                                        </div>
+
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                navigate("/farmer/profile")
+                                            }
+                                            className="group mt-5 flex w-full items-center justify-center gap-2 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-bold text-green-800 transition hover:border-green-300 hover:bg-green-100"
+                                        >
+                                            Manage Profile
+
+                                            <ArrowRight
+                                                size={16}
+                                                className="transition-transform group-hover:translate-x-1"
+                                            />
+                                        </button>
 
                                     </div>
-
-
-                                    <div className="mt-6 flex items-center gap-3">
-
-                                        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-green-500 to-emerald-700 text-xl font-extrabold text-white shadow-md shadow-green-100">
-                                            {user?.name
-                                                ?.trim()
-                                                ?.charAt(0)
-                                                ?.toUpperCase() || "F"}
-                                        </div>
-
-                                        <div className="min-w-0">
-                                            <h4 className="truncate font-extrabold text-gray-900">
-                                                {user?.name || "Farmer"}
-                                            </h4>
-
-                                            <p className="mt-1 flex items-center gap-1.5 truncate text-sm text-gray-500">
-                                                <MapPin
-                                                    size={14}
-                                                    className="shrink-0 text-green-600"
-                                                />
-
-                                                {user?.village ||
-                                                    "Location not specified"}
-                                            </p>
-                                        </div>
-
-                                    </div>
-
-
-                                    <div className="mt-6 space-y-3 border-t border-gray-100 pt-5">
-
-                                        <div className="rounded-xl bg-gray-50 p-3.5">
-                                            <p className="text-xs font-medium text-gray-500">
-                                                Farmer Type
-                                            </p>
-
-                                            <p className="mt-1.5 text-sm font-bold text-gray-900">
-                                                {isSmallFarmer
-                                                    ? "Small / Marginal Farmer"
-                                                    : user?.farmerType ===
-                                                        "LARGE"
-                                                      ? "Large Farmer / FPO"
-                                                      : "Not specified"}
-                                            </p>
-                                        </div>
-
-                                        <div className="rounded-xl bg-gray-50 p-3.5">
-                                            <p className="text-xs font-medium text-gray-500">
-                                                Produce Interest
-                                            </p>
-
-                                            <p className="mt-1.5 break-words text-sm font-bold text-gray-900">
-                                                {user?.produceInterest ||
-                                                    "Not specified"}
-                                            </p>
-                                        </div>
-
-                                        <div className="rounded-xl bg-gray-50 p-3.5">
-                                            <p className="text-xs font-medium text-gray-500">
-                                                Mobile Number
-                                            </p>
-
-                                            <p className="mt-1.5 break-words text-sm font-bold text-gray-900">
-                                                {user?.phone ||
-                                                    "Not specified"}
-                                            </p>
-                                        </div>
-
-                                    </div>
-
-
-                                    <button
-                                        type="button"
-                                        onClick={() =>
-                                            navigate("/farmer/profile")
-                                        }
-                                        className="group mt-5 flex w-full items-center justify-center gap-2 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-bold text-green-800 transition hover:border-green-300 hover:bg-green-100"
-                                    >
-                                        Manage Profile
-
-                                        <ArrowRight
-                                            size={16}
-                                            className="transition-transform group-hover:translate-x-1"
-                                        />
-                                    </button>
 
                                 </section>
 
                             </div>
 
                         </section>
-
 
                         {/* QUICK ACTIONS */}
 
@@ -970,14 +1027,13 @@ const FarmerDashboard = () => {
                                 </p>
                             </div>
 
-
                             <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
 
                                 {/* ADD PRODUCE */}
 
                                 <Link
                                     to="/farmer/produce/new"
-                                    className="farmer-action-card farmer-animate group relative overflow-hidden rounded-3xl border border-gray-100 bg-white p-6 shadow-sm sm:p-7"
+                                    className="dashboard-premium-card farmer-animate group relative overflow-hidden rounded-3xl border border-gray-100 bg-white p-6 shadow-sm sm:p-7"
                                     style={{ animationDelay: "830ms" }}
                                 >
 
@@ -985,11 +1041,8 @@ const FarmerDashboard = () => {
 
                                     <div className="relative flex items-start justify-between gap-4">
 
-                                        <div className="farmer-icon-box flex h-14 w-14 items-center justify-center rounded-2xl bg-green-100 text-green-700">
-                                            <Plus
-                                                size={27}
-                                                strokeWidth={1.8}
-                                            />
+                                        <div className="dashboard-icon flex h-14 w-14 items-center justify-center rounded-2xl bg-green-100 text-green-700">
+                                            <Plus size={27} strokeWidth={1.8} />
                                         </div>
 
                                         <div className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-100 bg-white text-gray-400 transition-all duration-300 group-hover:border-green-200 group-hover:bg-green-600 group-hover:text-white">
@@ -1025,21 +1078,17 @@ const FarmerDashboard = () => {
                                     </div>
 
                                     <div className="relative mt-6 flex items-center gap-2 border-t border-gray-100 pt-4 text-xs font-medium text-gray-400">
-                                        <Sprout
-                                            size={15}
-                                            className="text-green-600"
-                                        />
+                                        <Sprout size={15} className="text-green-600" />
                                         Share your produce with buyers
                                     </div>
 
                                 </Link>
 
-
                                 {/* MARKET PRICES */}
 
                                 <Link
                                     to="/farmer/market-prices"
-                                    className="farmer-action-card farmer-animate group relative overflow-hidden rounded-3xl border border-gray-100 bg-white p-6 shadow-sm sm:p-7"
+                                    className="dashboard-premium-card farmer-animate group relative overflow-hidden rounded-3xl border border-gray-100 bg-white p-6 shadow-sm sm:p-7"
                                     style={{ animationDelay: "900ms" }}
                                 >
 
@@ -1047,11 +1096,8 @@ const FarmerDashboard = () => {
 
                                     <div className="relative flex items-start justify-between gap-4">
 
-                                        <div className="farmer-icon-box flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-100 text-blue-700">
-                                            <TrendingUp
-                                                size={27}
-                                                strokeWidth={1.8}
-                                            />
+                                        <div className="dashboard-icon flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-100 text-blue-700">
+                                            <TrendingUp size={27} strokeWidth={1.8} />
                                         </div>
 
                                         <div className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-100 bg-white text-gray-400 transition-all duration-300 group-hover:border-blue-200 group-hover:bg-blue-600 group-hover:text-white">
@@ -1087,21 +1133,17 @@ const FarmerDashboard = () => {
                                     </div>
 
                                     <div className="relative mt-6 flex items-center gap-2 border-t border-gray-100 pt-4 text-xs font-medium text-gray-400">
-                                        <IndianRupee
-                                            size={15}
-                                            className="text-blue-600"
-                                        />
+                                        <IndianRupee size={15} className="text-blue-600" />
                                         Review reference crop prices
                                     </div>
 
                                 </Link>
 
-
                                 {/* DEALS */}
 
                                 <Link
                                     to="/farmer/deals"
-                                    className="farmer-action-card farmer-animate group relative overflow-hidden rounded-3xl border border-gray-100 bg-white p-6 shadow-sm sm:p-7"
+                                    className="dashboard-premium-card farmer-animate group relative overflow-hidden rounded-3xl border border-gray-100 bg-white p-6 shadow-sm sm:p-7"
                                     style={{ animationDelay: "970ms" }}
                                 >
 
@@ -1109,11 +1151,8 @@ const FarmerDashboard = () => {
 
                                     <div className="relative flex items-start justify-between gap-4">
 
-                                        <div className="farmer-icon-box flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-100 text-amber-700">
-                                            <Handshake
-                                                size={27}
-                                                strokeWidth={1.8}
-                                            />
+                                        <div className="dashboard-icon flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-100 text-amber-700">
+                                            <Handshake size={27} strokeWidth={1.8} />
                                         </div>
 
                                         <div className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-100 bg-white text-gray-400 transition-all duration-300 group-hover:border-amber-200 group-hover:bg-amber-500 group-hover:text-white">
@@ -1149,10 +1188,7 @@ const FarmerDashboard = () => {
                                     </div>
 
                                     <div className="relative mt-6 flex items-center gap-2 border-t border-gray-100 pt-4 text-xs font-medium text-gray-400">
-                                        <CheckCircle2
-                                            size={15}
-                                            className="text-amber-600"
-                                        />
+                                        <CheckCircle2 size={15} className="text-amber-600" />
                                         Keep track of your trade activity
                                     </div>
 
@@ -1162,6 +1198,50 @@ const FarmerDashboard = () => {
 
                         </section>
 
+                        {/* PAYMENT SHORTCUT */}
+
+                        <section
+                            className="dashboard-reveal mt-8 overflow-hidden rounded-3xl border border-green-100 bg-gradient-to-r from-white via-green-50 to-emerald-50 p-6 sm:p-8"
+                            style={{ animationDelay: "1020ms" }}
+                        >
+                            <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
+
+                                <div className="flex items-start gap-4">
+                                    <div className="flex h-13 w-13 shrink-0 items-center justify-center rounded-2xl bg-green-100 p-3 text-green-700">
+                                        <Wallet size={25} />
+                                    </div>
+
+                                    <div>
+                                        <p className="text-xs font-bold uppercase tracking-[0.16em] text-green-700">
+                                            Financial Management
+                                        </p>
+
+                                        <h3 className="mt-2 text-lg font-extrabold text-gray-900 sm:text-xl">
+                                            Manage Your Payments
+                                        </h3>
+
+                                        <p className="mt-2 max-w-xl text-sm leading-6 text-gray-500">
+                                            Review your payment records, track pending
+                                            amounts and monitor money received from buyers.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <button
+                                    type="button"
+                                    onClick={() => navigate("/farmer/payments")}
+                                    className="group inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-green-700 px-5 py-3.5 text-sm font-bold text-white shadow-md shadow-green-200 transition duration-300 hover:-translate-y-1 hover:bg-green-800 hover:shadow-lg"
+                                >
+                                    <CreditCard size={17} />
+                                    View Payments
+                                    <ArrowRight
+                                        size={16}
+                                        className="transition-transform group-hover:translate-x-1"
+                                    />
+                                </button>
+
+                            </div>
+                        </section>
 
                         {/* EMPTY PRODUCE STATE */}
 
@@ -1169,8 +1249,8 @@ const FarmerDashboard = () => {
                             !error &&
                             Number(stats.activeProduce ?? 0) === 0 && (
                                 <section
-                                    className="farmer-animate relative mt-8 overflow-hidden rounded-3xl border border-green-100 bg-gradient-to-r from-white via-green-50/70 to-emerald-50 p-6 sm:p-8"
-                                    style={{ animationDelay: "1040ms" }}
+                                    className="dashboard-reveal relative mt-8 overflow-hidden rounded-3xl border border-green-100 bg-gradient-to-r from-white via-green-50/70 to-emerald-50 p-6 sm:p-8"
+                                    style={{ animationDelay: "1080ms" }}
                                 >
 
                                     <div className="pointer-events-none absolute -right-8 -top-12 h-40 w-40 rounded-full bg-green-100/60 blur-2xl" />
@@ -1204,9 +1284,7 @@ const FarmerDashboard = () => {
                                         <button
                                             type="button"
                                             onClick={() =>
-                                                navigate(
-                                                    "/farmer/produce/new"
-                                                )
+                                                navigate("/farmer/produce/new")
                                             }
                                             className="group inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-green-700 px-5 py-3.5 text-sm font-bold text-white shadow-md shadow-green-200 transition-all duration-300 hover:-translate-y-1 hover:bg-green-800 hover:shadow-lg"
                                         >
@@ -1223,12 +1301,11 @@ const FarmerDashboard = () => {
                                 </section>
                             )}
 
-
                         {/* FOOTER */}
 
                         <footer
                             className="farmer-animate mt-8 flex flex-col items-center justify-between gap-3 border-t border-gray-200/80 py-5 text-center text-xs text-gray-400 sm:flex-row sm:text-left"
-                            style={{ animationDelay: "1100ms" }}
+                            style={{ animationDelay: "1150ms" }}
                         >
 
                             <p className="flex items-center gap-2">
