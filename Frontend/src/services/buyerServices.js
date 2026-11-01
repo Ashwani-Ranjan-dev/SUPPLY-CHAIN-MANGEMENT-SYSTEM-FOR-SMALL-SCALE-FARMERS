@@ -177,3 +177,49 @@ export const getBuyerPayments = async(req , res)=>{
     return data;
 }
 
+
+// ==========================================
+// AI MARKETPLACE - BUYER RECOMMENDATIONS
+// ==========================================
+
+export const getBuyerRecommendations = async (criteria = {}) => {
+    const params = new URLSearchParams();
+
+    // Add only valid search criteria
+    Object.entries(criteria).forEach(([key, value]) => {
+        if (
+            value !== undefined &&
+            value !== null &&
+            String(value).trim() !== ""
+        ) {
+            params.append(key, String(value).trim());
+        }
+    });
+
+    // Default recommendation count
+    if (!params.has("limit")) {
+        params.set("limit", "10");
+    }
+
+    const response = await fetch(
+        `${API_URL}/buyer/recommendations?${params.toString()}`,
+        {
+            method: "GET",
+            credentials: "include",
+            headers: {
+                Accept: "application/json",
+            },
+        }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        throw new Error(
+            data.message ||
+            "Unable to generate AI recommendations."
+        );
+    }
+
+    return data;
+};

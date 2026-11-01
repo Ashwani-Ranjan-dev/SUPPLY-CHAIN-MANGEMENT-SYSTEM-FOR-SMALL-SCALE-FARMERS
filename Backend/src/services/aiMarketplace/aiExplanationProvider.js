@@ -14,7 +14,7 @@
 
 import { GoogleGenAI } from "@google/genai";
 
-const REQUEST_TIMEOUT_MS = 8000;
+const REQUEST_TIMEOUT_MS = 20000;
 const MAX_EVIDENCE_LENGTH = 6000;
 
 const EXPLANATION_SCHEMA = {
@@ -69,6 +69,8 @@ async function withTimeout(promise, timeoutMs) {
 export async function generateAiExplanation({
     audience,
     evidence,
+    client: injectedClient,
+    timeoutMs = REQUEST_TIMEOUT_MS,
 }) {
     if (process.env.AI_EXPLANATIONS_ENABLED !== "true") {
         return null;
@@ -144,9 +146,10 @@ Evidence:
 ${evidenceJson}
 `;
 
-    const client = new GoogleGenAI({
+    const client = injectedClient || new GoogleGenAI({
         apiKey,
     });
+
 
     const request = client.models.generateContent({
         model,
@@ -161,7 +164,7 @@ ${evidenceJson}
 
     const response = await withTimeout(
         request,
-        REQUEST_TIMEOUT_MS
+        timeoutMs
     );
 
     const responseText = response.text;

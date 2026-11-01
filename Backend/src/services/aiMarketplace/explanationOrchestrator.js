@@ -196,8 +196,34 @@ export async function buildExplanationWithFallback({
 
             method: "AI_ASSISTED",
         };
-    } catch {
-        // Provider errors must not break the recommendation API.
+    }catch (error) {
+        // Log only safe diagnostic information.
+        // Never log API keys, prompts, or recommendation evidence.
+
+        const status = Number(error?.status);
+
+        let category = "UNKNOWN_PROVIDER_ERROR";
+
+        if (status === 401 || status === 403) {
+            category = "AUTHENTICATION_OR_PERMISSION_ERROR";
+        } else if (status === 429) {
+            category = "FREE_TIER_QUOTA_OR_RATE_LIMIT";
+        } else if (status >= 500 && status <= 599) {
+            category = "PROVIDER_SERVER_ERROR";
+        } else if (
+            /timed out/i.test(error?.message || "")
+        ) {
+            category = "PROVIDER_TIMEOUT";
+        }
+
+        console.warn(
+            "[KrishiConnect AI] Gemini unavailable. Using rule-based fallback.",
+            {
+                category,
+                status: Number.isFinite(status) ? status : null,
+            }
+        );
+
         return fallback;
     }
 }

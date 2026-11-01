@@ -36,6 +36,8 @@ import MarketPriceCard from "../../components/Farmer/MarketPriceCard";
 import { getFarmerDashboard } from "../../services/farmerServices.js";
 import { getMarketPrice } from "../../services/MarketPriceServices.js";
 
+import FarmerAIRecommendations from "../../components/Farmer/FarmerAIRecommendations.jsx";
+
 const FarmerDashboard = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
@@ -80,8 +82,8 @@ const FarmerDashboard = () => {
 
             setError(
                 err?.response?.data?.message ||
-                    err.message ||
-                    "Unable to load dashboard statistics."
+                err.message ||
+                "Unable to load dashboard statistics."
             );
         } finally {
             setLoading(false);
@@ -108,8 +110,8 @@ const FarmerDashboard = () => {
             setMarketPrices([]);
             setMarketPricesError(
                 err?.response?.data?.message ||
-                    err.message ||
-                    "Unable to load market prices."
+                err.message ||
+                "Unable to load market prices."
             );
         } finally {
             setMarketPricesLoading(false);
@@ -1005,6 +1007,12 @@ const FarmerDashboard = () => {
                             </div>
 
                         </section>
+                        {/* AI BUYER RECOMMENDATIONS */}
+
+                        <section className="mt-10">
+                            <FarmerAIRecommendations />
+                        </section>
+
 
                         {/* QUICK ACTIONS */}
 

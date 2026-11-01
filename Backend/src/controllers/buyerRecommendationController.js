@@ -297,7 +297,6 @@ export const getBuyerRecommendations = async (req, res) => {
         );
 
         // 7. Map ranked listings and generate explanations.
-        // Promise.all allows explanation requests to run concurrently.
         const listingById = new Map(
             validListings.map((listing) => [
                 String(listing._id),
@@ -390,6 +389,7 @@ export const getBuyerRecommendations = async (req, res) => {
 
             recommendations,
         });
+
     } catch (error) {
         console.error(
             "Buyer recommendation error:",

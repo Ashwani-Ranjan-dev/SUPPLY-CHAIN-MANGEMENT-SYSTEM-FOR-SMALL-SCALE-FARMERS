@@ -24,6 +24,8 @@ import LogoutButton from "../../components/auth/LogoutButton";
 
 import { getBuyerDashboard } from "../../services/buyerServices.js";
 
+import BuyerAIRecommendations from "../../components/Buyer/BuyerAIRecommendations.jsx";
+
 
 const BuyerDashboard = () => {
     const { user } = useAuth();
@@ -562,6 +564,10 @@ const BuyerDashboard = () => {
 
                 </section>
 
+                {/* AI MARKETPLACE RECOMMENDATIONS */}
+                <section className="mt-10">
+                    <BuyerAIRecommendations />
+                </section>
 
                 {/* QUICK ACTIONS */}
 
