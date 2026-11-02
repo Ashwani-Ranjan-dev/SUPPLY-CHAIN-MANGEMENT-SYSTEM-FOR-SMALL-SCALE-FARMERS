@@ -563,10 +563,9 @@ const BuyerDashboard = () => {
                     </div>
 
                 </section>
-
                 {/* AI MARKETPLACE RECOMMENDATIONS */}
                 <section className="mt-10">
-                    <BuyerAIRecommendations />
+                    <BuyerAIRecommendations mode="dashboard" />
                 </section>
 
                 {/* QUICK ACTIONS */}

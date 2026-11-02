@@ -1010,9 +1010,8 @@ const FarmerDashboard = () => {
                         {/* AI BUYER RECOMMENDATIONS */}
 
                         <section className="mt-10">
-                            <FarmerAIRecommendations />
+                            <FarmerAIRecommendations mode="dashboard"/>
                         </section>
-
 
                         {/* QUICK ACTIONS */}
 
